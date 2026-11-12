@@ -1,0 +1,1898 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Home App</title>
+<meta name="description" content="Track recurring home maintenance — safety checks, HVAC, plumbing, attic, exterior and yard work — right on your phone.">
+<meta name="theme-color" content="#2b6e5f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141311" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Home">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232b6e5f'/%3E%3Cpath d='M32 12 10 31h6v20h32V31h6z' fill='%23f4f1ec'/%3E%3Cpath d='m24 37 6 6 11-12' fill='none' stroke='%232b6e5f' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f4f1ec; --surface:#fff; --surface-2:#f8f6f2; --surface-3:#efebe4;
+  --text:#1d1b18; --text-2:#5f5a52; --text-3:#8f887d; --border:#e6e1d8;
+  --primary:#2b6e5f; --primary-ink:#fff; --primary-soft:#dcefe9;
+  --danger:#c8372d; --danger-soft:#fbe5e2;
+  --warn:#a86400; --warn-soft:#fdf0d9;
+  --ok:#2f7d4a; --ok-soft:#e1f2e6;
+  --shadow:0 1px 2px rgba(40,30,10,.05),0 4px 14px rgba(40,30,10,.06);
+  --shadow-lg:0 -8px 40px rgba(0,0,0,.18);
+  --radius:16px;
+  --tabbar-h:64px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#141311; --surface:#1e1c19; --surface-2:#252320; --surface-3:#2e2b27;
+  --text:#f1ede6; --text-2:#b9b2a6; --text-3:#8a8378; --border:#35312b;
+  --primary:#5cbfa6; --primary-ink:#0b1d18; --primary-soft:#1b3631;
+  --danger:#ff6b5e; --danger-soft:#3b1d1a;
+  --warn:#f2b14c; --warn-soft:#3a2c14;
+  --ok:#6fcf8f; --ok-soft:#1a3322;
+  --shadow:0 1px 2px rgba(0,0,0,.3); --shadow-lg:0 -8px 40px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141311; --surface:#1e1c19; --surface-2:#252320; --surface-3:#2e2b27;
+    --text:#f1ede6; --text-2:#b9b2a6; --text-3:#8a8378; --border:#35312b;
+    --primary:#5cbfa6; --primary-ink:#0b1d18; --primary-soft:#1b3631;
+    --danger:#ff6b5e; --danger-soft:#3b1d1a;
+    --warn:#f2b14c; --warn-soft:#3a2c14;
+    --ok:#6fcf8f; --ok-soft:#1a3322;
+    --shadow:0 1px 2px rgba(0,0,0,.3); --shadow-lg:0 -8px 40px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;overscroll-behavior-y:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+input,select,textarea{-webkit-appearance:none;appearance:none}
+.hidden{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- App shell ---------- */
+.app{max-width:640px;margin:0 auto;min-height:100vh;position:relative}
+.topbar{position:sticky;top:0;z-index:20;background:var(--bg);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);padding:calc(var(--safe-t) + 10px) 16px 8px;display:flex;align-items:center;gap:12px}
+.topbar h1{font-size:28px;line-height:1.15;margin:0;font-weight:750;letter-spacing:-.02em;flex:1}
+.topbar .sub{display:block;font-size:13px;font-weight:500;color:var(--text-3);letter-spacing:0;margin-bottom:2px}
+.icon-btn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--shadow);color:var(--primary);flex:none}
+.icon-btn svg{width:22px;height:22px}
+main{padding:4px 16px calc(var(--tabbar-h) + var(--safe-b) + 28px)}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-top:1px solid var(--border);padding-bottom:var(--safe-b)}
+.tabbar-in{max-width:640px;margin:0 auto;display:flex;height:var(--tabbar-h)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:600;color:var(--text-3);position:relative}
+.tab svg{width:25px;height:25px}
+.tab[aria-current="page"]{color:var(--primary)}
+.tab .badge{position:absolute;top:7px;left:calc(50% + 6px);background:var(--danger);color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;display:grid;place-items:center}
+
+/* ---------- Generic ---------- */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow)}
+.section-h{display:flex;align-items:baseline;justify-content:space-between;margin:22px 4px 8px}
+.section-h h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin:0;font-weight:700}
+.section-h .count{font-size:13px;color:var(--text-3);font-weight:600}
+.section-h.overdue h2{color:var(--danger)}
+.section-h.soon h2{color:var(--warn)}
+.list{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:13px;font-weight:650;background:var(--surface-3);color:var(--text)}
+.btn svg{width:19px;height:19px}
+.btn-primary{background:var(--primary);color:var(--primary-ink)}
+.btn-soft{background:var(--primary-soft);color:var(--primary)}
+.btn-danger{background:var(--danger-soft);color:var(--danger)}
+.btn-block{display:flex;width:100%}
+.btn-sm{min-height:36px;padding:0 13px;border-radius:10px;font-size:14px}
+.btn:active,.icon-btn:active,.row:active,.chip:active{transform:scale(.98)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 16px 6px;margin:0 -16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 13px;border-radius:17px;background:var(--surface);box-shadow:var(--shadow);font-size:14px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--primary);color:var(--primary-ink)}
+.muted{color:var(--text-3)}
+.small{font-size:13px}
+.empty{text-align:center;padding:36px 20px;color:var(--text-2)}
+.empty .big{font-size:44px;margin-bottom:6px}
+.empty h3{margin:4px 0 6px;color:var(--text);font-size:19px}
+.empty p{margin:0 0 16px}
+.stack{display:flex;flex-direction:column;gap:10px}
+.row-gap{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ---------- Task rows ---------- */
+.row{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;min-height:64px;position:relative;width:100%;text-align:left;background:var(--surface)}
+.row + .row::before{content:"";position:absolute;top:0;left:66px;right:0;border-top:1px solid var(--border)}
+.ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:21px;flex:none;background:var(--surface-2);background:color-mix(in srgb,var(--c) 16%,var(--surface))}
+.row-main{flex:1;min-width:0}
+.row-title{font-weight:620;font-size:16px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.row-title .lbl{font-weight:500;color:var(--text-2)}
+.row-meta{font-size:13px;color:var(--text-3);margin-top:3px;display:flex;flex-wrap:wrap;gap:0 6px}
+.row-meta .dot::before{content:"·";margin-right:6px}
+.due{font-weight:650;color:var(--text-2)}
+.due.overdue{color:var(--danger)}
+.due.soon{color:var(--warn)}
+.due.ok{color:var(--ok)}
+.star{color:var(--warn)}
+.row-right{font-size:13px;color:var(--text-3);font-weight:600;text-align:right;flex:none;max-width:38%}
+.check{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;position:relative}
+.check::before{content:"";position:absolute;inset:7px;border-radius:50%;border:2.5px solid var(--border);transition:all .2s}
+.check svg{width:18px;height:18px;color:var(--text-3);opacity:.0;position:relative;transition:all .2s}
+.check:hover svg{opacity:.5}
+.check.overdue::before{border-color:color-mix(in srgb,var(--danger) 55%,var(--border))}
+.check.done::before{background:var(--ok);border-color:var(--ok);transform:scale(1.08)}
+.check.done svg{opacity:1;color:#fff}
+.row.leaving{animation:leave .45s ease forwards .25s}
+@keyframes leave{to{opacity:0;transform:translateX(30px)}}
+.more-btn{width:100%;padding:14px;text-align:center;color:var(--primary);font-weight:650;background:var(--surface);border-top:1px solid var(--border)}
+
+/* ---------- Hero ---------- */
+.hero{padding:16px;display:flex;gap:10px}
+.stat{flex:1;border-radius:13px;padding:11px 12px;background:var(--surface-2)}
+.stat b{display:block;font-size:26px;line-height:1.1;font-weight:750;letter-spacing:-.02em}
+.stat span{font-size:12px;font-weight:650;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em}
+.stat.red b{color:var(--danger)} .stat.amber b{color:var(--warn)} .stat.green b{color:var(--ok)}
+.banner{display:flex;gap:12px;align-items:center;padding:12px 14px;margin-top:12px;border-radius:var(--radius);background:var(--warn-soft);color:var(--text)}
+.banner .t{flex:1;font-size:14px}
+.banner b{display:block}
+.caught{padding:26px 16px;text-align:center}
+.caught .big{font-size:40px}
+.caught h3{margin:6px 0 2px;font-size:18px}
+.caught p{margin:0;color:var(--text-2);font-size:14px}
+
+/* ---------- Plan ---------- */
+.month{margin-top:18px}
+.month-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 4px 8px}
+.month-h h2{margin:0;font-size:20px;font-weight:720;letter-spacing:-.01em}
+.month-h span{font-size:13px;color:var(--text-3);font-weight:600}
+.row.compact{min-height:54px;padding-top:9px;padding-bottom:9px}
+.row.compact .ico{width:34px;height:34px;font-size:18px;border-radius:10px}
+.row.compact + .row.compact::before{left:60px}
+.pill{display:inline-block;padding:3px 9px;border-radius:9px;font-size:12px;font-weight:700;background:var(--surface-3);color:var(--text-2)}
+.pill.red{background:var(--danger-soft);color:var(--danger)}
+
+/* ---------- Search / seg ---------- */
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:0 12px;height:44px;margin:4px 0 10px}
+.search svg{width:18px;height:18px;color:var(--text-3);flex:none}
+.search input{border:0;outline:0;background:transparent;flex:1;height:100%;font-size:16px}
+.seg{display:flex;background:var(--surface-3);border-radius:11px;padding:3px;gap:3px}
+.seg button{flex:1;height:36px;border-radius:9px;font-weight:650;font-size:14px;color:var(--text-2)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.cat-h{display:flex;align-items:center;gap:8px;margin:20px 4px 8px;font-weight:700;font-size:15px}
+.cat-h .n{color:var(--text-3);font-weight:600;font-size:13px;margin-left:auto}
+.add-btn{flex:none;height:34px;padding:0 13px;border-radius:17px;background:var(--primary-soft);color:var(--primary);font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:4px}
+.add-btn.added{background:transparent;color:var(--ok)}
+.lib-notes{font-size:14px;color:var(--text-2);padding:0 14px 14px 66px;margin-top:-4px}
+.lib-row-wrap + .lib-row-wrap{border-top:1px solid var(--border)}
+summary{list-style:none}summary::-webkit-details-marker{display:none}
+.lib-row-wrap summary.row{cursor:pointer}
+
+/* ---------- Settings ---------- */
+.set-group{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.set-row{display:flex;align-items:center;gap:12px;padding:13px 14px;min-height:52px;width:100%;text-align:left}
+.set-row + .set-row{border-top:1px solid var(--border)}
+.set-row .lab{flex:1}
+.set-row .lab small{display:block;color:var(--text-3);font-size:13px;margin-top:2px}
+.set-row .chev{color:var(--text-3)}
+.feat-grid{display:flex;flex-wrap:wrap;gap:8px}
+.feat{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;background:var(--surface-2);border:1.5px solid var(--border);font-size:14px;font-weight:600;color:var(--text-2)}
+.feat[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+.feat-group-h{font-size:13px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px}
+.prose{font-size:14px;color:var(--text-2)}
+.prose a{color:var(--primary)}
+
+/* ---------- Sheets ---------- */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.38);opacity:0;transition:opacity .25s;z-index:50}
+.backdrop.open{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:640px;margin:0 auto;background:var(--bg);border-radius:20px 20px 0 0;box-shadow:var(--shadow-lg);max-height:calc(100vh - var(--safe-t) - 24px);max-height:calc(100dvh - var(--safe-t) - 24px);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.sheet.open{transform:none}
+.sheet.full{height:calc(100vh - var(--safe-t) - 12px);height:calc(100dvh - var(--safe-t) - 12px);max-height:none}
+.sheet-head{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 18px;position:relative;flex:none}
+.sheet-head::before{content:"";position:absolute;top:6px;left:50%;width:38px;height:5px;margin-left:-19px;border-radius:3px;background:var(--border)}
+.sheet-head h2{flex:1;margin:14px 0 4px;font-size:19px;font-weight:720}
+.sheet-head .x{width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:grid;place-items:center;color:var(--text-2);margin-top:10px}
+.sheet-head .x svg{width:16px;height:16px}
+.sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 16px calc(var(--safe-b) + 22px);flex:1;overscroll-behavior:contain}
+.sheet-foot{flex:none;padding:10px 16px calc(var(--safe-b) + 12px);border-top:1px solid var(--border);background:var(--bg);display:flex;gap:10px}
+.sheet-foot .btn{flex:1}
+.action-list{background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.action-list button{display:flex;align-items:center;gap:12px;width:100%;padding:15px 16px;text-align:left;font-weight:600;font-size:16px}
+.action-list button + button{border-top:1px solid var(--border)}
+.action-list button svg{width:20px;height:20px;color:var(--text-3);flex:none}
+.action-list button.danger{color:var(--danger)}
+.action-list button.danger svg{color:var(--danger)}
+
+/* detail */
+.d-head{display:flex;gap:14px;align-items:flex-start;margin:2px 0 12px}
+.d-head .ico{width:56px;height:56px;font-size:30px;border-radius:16px}
+.d-head h3{margin:2px 0 6px;font-size:22px;line-height:1.2;letter-spacing:-.01em}
+.d-tags{display:flex;flex-wrap:wrap;gap:6px}
+.notes{background:var(--surface);border-radius:var(--radius);padding:13px 14px;font-size:15px;color:var(--text-2);box-shadow:var(--shadow);white-space:pre-wrap}
+.item-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-bottom:10px}
+.item-top{display:flex;align-items:flex-start;gap:10px}
+.item-top .t{flex:1;min-width:0}
+.item-top .name{font-weight:700;font-size:16px}
+.item-top .meta{font-size:14px;color:var(--text-2);margin-top:2px}
+.item-top .meta2{font-size:13px;color:var(--text-3);margin-top:2px}
+.item-note{font-size:13px;color:var(--text-2);background:var(--surface-2);border-radius:9px;padding:6px 9px;margin-top:8px;display:inline-block}
+.item-actions{display:flex;gap:8px;margin-top:12px}
+.item-actions .btn{flex:1;min-height:42px;padding:0 10px;font-size:15px}
+.item-actions .btn.icon-only{flex:none;width:46px;padding:0}
+.hist{margin:8px 0 0;padding:0;list-style:none;font-size:14px;color:var(--text-2)}
+.hist li{display:flex;gap:8px;padding:5px 0;border-top:1px dashed var(--border)}
+.hist li span:first-child{font-weight:650;color:var(--text);min-width:96px}
+.link-btn{color:var(--primary);font-weight:650;font-size:14px;padding:6px 0}
+
+/* forms */
+.field{display:block;margin-bottom:14px}
+.field > span{display:block;font-size:13px;font-weight:700;color:var(--text-2);margin:0 2px 6px}
+.field .hint{font-size:12px;color:var(--text-3);margin:5px 2px 0;font-weight:500}
+.input{display:block;width:100%;min-height:46px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);padding:10px 12px;font-size:16px;outline:none}
+.input:focus{border-color:var(--primary)}
+textarea.input{min-height:90px;resize:vertical;line-height:1.4}
+select.input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%238f887d'%3E%3Cpath d='M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:20px;padding-right:36px}
+input[type="date"].input{min-height:46px}
+.inline{display:flex;gap:10px;align-items:center}
+.inline > *{flex:1}
+.inline .every-n{flex:0 0 90px}
+.months{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.months button{height:40px;border-radius:10px;background:var(--surface);border:1.5px solid var(--border);font-weight:650;font-size:14px;color:var(--text-2)}
+.months button[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.toggle{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border-radius:12px;border:1.5px solid var(--border);margin-bottom:14px;width:100%;text-align:left}
+.toggle .lab{flex:1;font-weight:600}
+.toggle .lab small{display:block;color:var(--text-3);font-weight:500;font-size:13px;margin-top:1px}
+.sw{width:50px;height:30px;border-radius:15px;background:var(--surface-3);position:relative;flex:none;transition:background .2s;border:1px solid var(--border)}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+[aria-checked="true"] .sw{background:var(--primary);border-color:var(--primary)}
+[aria-checked="true"] .sw::after{transform:translateX(20px)}
+.preview{font-size:14px;color:var(--text-2);background:var(--primary-soft);border-radius:12px;padding:10px 12px;margin-bottom:14px}
+.preview b{color:var(--text)}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.quick button{height:32px;padding:0 11px;border-radius:9px;background:var(--surface-3);font-size:13px;font-weight:650;color:var(--text-2)}
+.box{background:var(--surface);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);margin-bottom:14px}
+
+/* onboarding */
+.onb-hero{text-align:center;padding:10px 6px 4px}
+.onb-hero .logo{width:72px;height:72px;margin:0 auto 10px;border-radius:20px;background:var(--primary);display:grid;place-items:center;box-shadow:0 6px 20px color-mix(in srgb,var(--primary) 35%,transparent)}
+.onb-hero .logo svg{width:44px;height:44px}
+.onb-hero h2{margin:0 0 6px;font-size:26px;letter-spacing:-.02em}
+.onb-hero p{margin:0 auto;color:var(--text-2);max-width:420px}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(var(--tabbar-h) + var(--safe-b) + 14px);transform:translate(-50%,20px);opacity:0;z-index:60;background:#2a2723;color:#f6f2ea;border-radius:14px;padding:11px 12px 11px 16px;display:flex;align-items:center;gap:12px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.25);transition:all .25s;width:max-content;max-width:calc(100% - 32px);pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{color:#7fe0c6;font-weight:750;padding:6px 8px}
+body.sheet-open .toast{bottom:auto;top:calc(var(--safe-t) + 12px);transform:translate(-50%,-16px)}
+body.sheet-open .toast.show{transform:translate(-50%,0)}
+:root[data-theme="dark"] .toast{background:#f1ede6;color:#1d1b18}
+:root[data-theme="dark"] .toast button{color:#1f6a59}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .toast{background:#f1ede6;color:#1d1b18}:root:not([data-theme="light"]) .toast button{color:#1f6a59}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (min-width:700px){.sheet{bottom:20px;border-radius:20px}.sheet.full{height:calc(100vh - 40px)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar" id="topbar"></header>
+  <main id="main"></main>
+</div>
+<nav class="tabbar" aria-label="Sections">
+  <div class="tabbar-in" id="tabbar"></div>
+</nav>
+<div id="sheets"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-msg"></span><button id="toast-btn" class="hidden"></button></div>
+<input type="file" id="restore-file" accept="application/json,.json" class="hidden">
+
+<script>
+/* =====================================================================
+   SUGGESTED TASK LIBRARY
+   Compiled from common homeowner checklists (Ramsey Solutions, Opendoor,
+   HouseLogic, Fannie Mae, UGA Extension, Bob Vila / LawnStarter lawn
+   calendars, NFPA/CPSC/EPA guidance). Schedules are sensible defaults —
+   every one can be edited in the app.
+   sched: E(every, unit, seasonMonths?)  → repeat every N d/w/m/y
+          M(month, month, ...)           → due once in each listed month
+   req:   home features that make the task relevant (any-of). none = everyone
+   ===================================================================== */
+const E = (every, unit, season) => ({ type: 'interval', every, unit, season: season || [] });
+const M = (...months) => ({ type: 'months', months });
+const WARM = [4,5,6,7,8,9,10], SUMMER = [5,6,7,8,9], GROW = [4,5,6,7,8,9];
+
+const CATS = {
+  safety:     { name: 'Safety',               icon: '🚨', color: '#e5484d' },
+  hvac:       { name: 'Heating & Cooling',    icon: '🌡️', color: '#f76b15' },
+  plumbing:   { name: 'Plumbing & Water',     icon: '🚿', color: '#0090ff' },
+  electrical: { name: 'Electrical',           icon: '⚡', color: '#d6a100' },
+  kitchen:    { name: 'Kitchen & Appliances', icon: '🍳', color: '#8e4ec6' },
+  interior:   { name: 'Interior',             icon: '🛋️', color: '#a07554' },
+  attic:      { name: 'Attic',                icon: '🪜', color: '#6e56cf' },
+  exterior:   { name: 'Exterior & Roof',      icon: '🏠', color: '#5b7a8c' },
+  yard:       { name: 'Yard & Garden',        icon: '🌳', color: '#3e9b4f' },
+  pool:       { name: 'Pool & Spa',           icon: '🏊', color: '#00a2c7' },
+  other:      { name: 'Other',                icon: '📌', color: '#8f887d' },
+};
+
+const FEATURES = [
+  { group: 'Outside', items: [
+    ['yard','Lawn / yard','🌱'], ['garden','Garden beds & shrubs','🌷'], ['trees','Large trees','🌳'],
+    ['deck','Deck or porch','🪵'], ['driveway','Asphalt driveway','🛣️'], ['sprinklers','Sprinkler system','💦'],
+    ['pool','Pool','🏊'], ['hottub','Hot tub','♨️'], ['garage','Garage door opener','🚗'] ]},
+  { group: 'Inside the house', items: [
+    ['attic','Attic','🪜'], ['basement','Basement','🧱'], ['crawlspace','Crawl space','🔦'], ['fireplace','Fireplace / wood stove','🔥'] ]},
+  { group: 'Heating & cooling', items: [
+    ['furnace','Furnace (forced air)','🌬️'], ['centralair','Central AC','❄️'], ['heatpump','Heat pump','🔄'],
+    ['minisplit','Ductless mini-splits','🌀'], ['boiler','Boiler / radiators','🫖'], ['generator','Generator','🔌'] ]},
+  { group: 'Water', items: [
+    ['tankwh','Tank water heater','🛢️'], ['tankless','Tankless water heater','🔥'], ['sump','Sump pump','⛽'],
+    ['softener','Water softener','🧂'], ['waterfilter','Water filter system','🚰'], ['fridgewater','Fridge water/ice dispenser','🧊'],
+    ['well','Private well','🪣'], ['septic','Septic system','🚽'] ]},
+  { group: 'Climate', items: [
+    ['cold','Freezing winters / snow','☃️'], ['storms','Hurricane / severe storm area','🌀'] ]},
+];
+const DEFAULT_FEATURES = ['yard','garden','trees','attic','garage','furnace','centralair','tankwh','cold'];
+
+const LIBRARY = [
+  // ---------------- SAFETY ----------------
+  { id:'smoke-test', cat:'safety', high:1, name:'Test smoke alarms', s:E(1,'m'),
+    notes:'Press and hold the test button on every alarm until it sounds. NFPA and the CPSC recommend testing monthly. Vacuum dust out of the vents while you are there.' },
+  { id:'co-test', cat:'safety', high:1, name:'Test carbon monoxide (CO) alarms', s:E(1,'m'),
+    notes:'Press the test button on each CO alarm. You need one on every level and outside sleeping areas if you have any gas appliance, fireplace, or attached garage.' },
+  { id:'alarm-batteries', cat:'safety', high:1, name:'Replace smoke & CO alarm batteries', s:M(11),
+    notes:'Swap batteries once a year — an easy habit is when the clocks change in the fall. Skip alarms with sealed 10-year batteries. Replace right away if an alarm chirps.' },
+  { id:'smoke-replace', cat:'safety', high:1, name:'Replace smoke alarms', s:E(10,'y'),
+    notes:'Smoke alarms wear out. Replace every 10 years from the manufacture date printed on the back.\n\nInstalled at different times? Add each group as its own item (e.g. "Upstairs – 2019", "Basement – 2022") so each gets its own due date.' },
+  { id:'co-replace', cat:'safety', high:1, name:'Replace CO alarms', s:E(7,'y'),
+    notes:'CO sensors expire after about 5–10 years depending on the model. Check the "replace by" date on the back and set the next-due date to match.' },
+  { id:'extinguisher-check', cat:'safety', name:'Inspect fire extinguishers', s:E(3,'m'),
+    notes:'Gauge needle in the green, pin and tamper seal intact, no dents or corrosion, nozzle clear. NFPA suggests a quick glance monthly. Keep one in the kitchen, garage, and on each floor.' },
+  { id:'extinguisher-replace', cat:'safety', name:'Replace fire extinguishers', s:E(10,'y'),
+    notes:'Disposable extinguishers should be replaced about every 10–12 years (check the date stamped on the bottle) — or immediately after any use.' },
+  { id:'fire-drill', cat:'safety', name:'Practice fire escape plan', s:E(6,'m'),
+    notes:'Walk through two ways out of every room and agree on a meeting spot outside. NFPA recommends a home fire drill twice a year. Check that windows open and escape ladders are handy for upper floors.' },
+  { id:'emergency-kit', cat:'safety', name:'Refresh emergency kit & supplies', s:E(6,'m'),
+    notes:'Rotate water (1 gallon per person per day, 3+ days) and food, test flashlights and radio, replace batteries, refresh medications and first-aid supplies.' },
+  { id:'radon', cat:'safety', name:'Test for radon', s:E(2,'y'),
+    notes:'Use a short-term test kit in the lowest lived-in level. EPA recommends retesting every 2 years and after renovations; fix the home at 4 pCi/L or higher.' },
+  { id:'dryer-vent', cat:'safety', high:1, name:'Clean dryer vent duct', s:E(1,'y'),
+    notes:'Lint buildup is a leading cause of house fires. Disconnect the duct and brush it out all the way to the outside hood. Make sure the exterior flap opens and closes freely. Signs you are overdue: clothes take longer to dry, the dryer feels very hot.' },
+  { id:'garage-reverse', cat:'safety', high:1, req:['garage'], name:'Test garage door auto-reverse', s:E(1,'m'),
+    notes:'Lay a 2×4 flat on the floor under the door — it should reverse on contact. Then wave something through the photo-eye beam while closing; the door should stop and reopen.' },
+  { id:'storm-prep', cat:'safety', req:['storms'], name:'Storm / hurricane season prep', s:M(5),
+    notes:'Check shutters or pre-cut plywood, trim weak limbs, clear drains, test the generator, stock supplies, and review insurance and evacuation plans before the season starts.' },
+
+  // ---------------- HVAC ----------------
+  { id:'hvac-filter', cat:'hvac', high:1, name:'Check / replace furnace & AC filter', s:E(1,'m'),
+    notes:'Check monthly. Replace 1-inch filters every 1–3 months and 4–5-inch media filters every 6–12 months (more often with pets or allergies). Write the filter size in the item note.\n\nMore than one return or system? Add each as its own item so they can be on different cycles.' },
+  { id:'furnace-service', cat:'hvac', req:['furnace'], name:'Furnace tune-up (professional)', s:M(9),
+    notes:'Annual inspection before heating season: burners, heat exchanger, flue/venting, safety controls, and a CO check.' },
+  { id:'ac-service', cat:'hvac', req:['centralair'], name:'AC tune-up (professional)', s:M(4),
+    notes:'Annual service before cooling season: refrigerant charge, coil cleaning, electrical connections, and condensate drain.' },
+  { id:'condenser-clean', cat:'hvac', req:['centralair','heatpump'], name:'Clean outdoor AC / heat pump unit', s:M(5),
+    notes:'Turn power off at the disconnect. Clear leaves and debris, gently hose the fins from the inside out, straighten bent fins with a fin comb, and keep 2 ft of clearance around the unit.' },
+  { id:'condensate-line', cat:'hvac', req:['centralair','heatpump'], name:'Flush AC condensate drain line', s:E(3,'m',WARM),
+    notes:'Pour a cup of distilled vinegar into the drain line access port to prevent clogs and algae. Check the drain pan for standing water.' },
+  { id:'registers', cat:'hvac', name:'Vacuum vents, registers & return grilles', s:E(6,'m'),
+    notes:'Remove dust and pet hair; make sure furniture and rugs are not blocking airflow.' },
+  { id:'humidifier', cat:'hvac', req:['furnace'], name:'Replace whole-house humidifier pad', s:M(10),
+    notes:'If you have a furnace humidifier: swap the water panel/evaporator pad and clean scale before heating season. Turn the humidifier water off in spring.' },
+  { id:'boiler-service', cat:'hvac', req:['boiler'], name:'Boiler service (professional)', s:M(9),
+    notes:'Annual check of burner, heat exchanger, expansion tank, pressure relief valve, circulator pumps and venting.' },
+  { id:'bleed-radiators', cat:'hvac', req:['boiler'], name:'Bleed radiators', s:M(10),
+    notes:'With the heat on, open each radiator bleed valve until water (not air) comes out. Check boiler pressure afterward (typically 12–15 psi cold).' },
+  { id:'heatpump-service', cat:'hvac', req:['heatpump'], name:'Heat pump service (professional)', s:M(4,10),
+    notes:'Heat pumps run year-round, so most manufacturers recommend a check in spring and in fall.' },
+  { id:'minisplit-filters', cat:'hvac', req:['minisplit'], name:'Clean mini-split filters', s:E(1,'m'),
+    notes:'Pop out the mesh filters in each indoor head, rinse, let dry completely, and reinstall. Add each head as its own item if you want to stagger them.' },
+  { id:'minisplit-coil', cat:'hvac', req:['minisplit'], name:'Deep clean mini-split coils (professional)', s:E(1,'y'),
+    notes:'Coil and blower-wheel cleaning keeps mold and odors out and efficiency up.' },
+  { id:'thermostat-batt', cat:'hvac', name:'Replace thermostat batteries', s:E(1,'y'),
+    notes:'Many thermostats need AA/AAA batteries even when wired. Dead batteries can shut off your heat while you are away.' },
+  { id:'ducts-inspect', cat:'hvac', name:'Inspect visible ductwork', s:E(1,'y'),
+    notes:'In the attic, basement or crawl space, look for disconnected, crushed or leaky ducts. Seal joints with mastic or foil tape (not cloth duct tape).' },
+  { id:'duct-clean', cat:'hvac', name:'Consider professional duct cleaning', s:E(5,'y'),
+    notes:'Only needed if there is visible mold, pests or heavy debris, or after a renovation.' },
+  { id:'bath-fans', cat:'hvac', name:'Clean bathroom exhaust fans', s:E(6,'m'),
+    notes:'Remove the cover, wash it, and vacuum the fan blades. Quick test: a square of toilet paper should cling to the grille when the fan runs.' },
+  { id:'chimney', cat:'hvac', high:1, req:['fireplace'], name:'Chimney inspection & sweep', s:M(9),
+    notes:'NFPA recommends an annual chimney inspection before burning season; sweep when creosote builds up. Check the cap, crown and damper too.' },
+  { id:'dehumidifier', cat:'hvac', req:['basement','crawlspace'], name:'Clean dehumidifier', s:E(1,'m',SUMMER),
+    notes:'Clean the bucket and rinse the filter. Aim to keep basement humidity between 30–50%.' },
+
+  // ---------------- PLUMBING ----------------
+  { id:'toilet-dye', cat:'plumbing', name:'Toilet flapper leak test (dye test)', s:E(3,'m'),
+    notes:'Put a few drops of food coloring (or a dye tablet) in each toilet tank and wait 15 minutes without flushing. Color in the bowl = a leaky flapper — a cheap fix that can waste 200+ gallons a day. Also listen for running and check for a rocking base.\n\nAdd each toilet as an item to track them separately.' },
+  { id:'under-sink', cat:'plumbing', name:'Check under sinks for leaks', s:E(3,'m'),
+    notes:'Look for drips, water stains or a warped cabinet floor under kitchen and bathroom sinks. Wiping fittings with a dry paper towel reveals slow leaks.' },
+  { id:'aerators', cat:'plumbing', name:'Clean faucet aerators & showerheads', s:E(6,'m'),
+    notes:'Unscrew aerators and soak in vinegar to dissolve mineral buildup. Soak showerheads in a bag of vinegar overnight.' },
+  { id:'wh-flush', cat:'plumbing', req:['tankwh'], name:'Flush water heater', s:E(1,'y'),
+    notes:'Drain a few gallons (or fully flush) from the drain valve to clear sediment — improves efficiency and lifespan. While there, confirm the temperature is about 120°F.' },
+  { id:'wh-tpr', cat:'plumbing', high:1, req:['tankwh'], name:'Test water heater relief (T&P) valve', s:E(1,'y'),
+    notes:'Lift the T&P valve lever briefly and watch for hot water from the discharge pipe. If nothing flows or it will not stop dripping afterward, have it replaced.' },
+  { id:'wh-anode', cat:'plumbing', req:['tankwh'], name:'Inspect water heater anode rod', s:E(3,'y'),
+    notes:'The anode rod corrodes so your tank does not. Replace it when worn down to the core wire — typically every 3–5 years, sooner with softened water.' },
+  { id:'tankless-descale', cat:'plumbing', req:['tankless'], name:'Descale tankless water heater', s:E(1,'y'),
+    notes:'Flush with vinegar using a pump kit through the service valves, and clean the inlet water filter screen. Hard water may need this every 6 months.' },
+  { id:'washer-hoses', cat:'plumbing', name:'Inspect washing machine hoses', s:E(1,'y'),
+    notes:'Look for bulges, cracks or rust at the fittings. Pull the washer out a few inches to check behind it.' },
+  { id:'washer-hoses-replace', cat:'plumbing', name:'Replace washing machine hoses', s:E(5,'y'),
+    notes:'Replace rubber supply hoses every 5 years even if they look fine. Braided stainless hoses are a good upgrade.' },
+  { id:'sump-test', cat:'plumbing', high:1, req:['sump'], name:'Test sump pump', s:E(3,'m'),
+    notes:'Pour a bucket of water into the pit — the pump should kick on and empty it. Make sure the outside discharge line is clear and drains away from the house. Test before spring rains for sure.' },
+  { id:'sump-backup', cat:'plumbing', req:['sump'], name:'Check sump pump backup battery', s:E(1,'y'),
+    notes:'Test the battery backup or water-powered backup. Replace backup batteries every 3–5 years.' },
+  { id:'main-shutoff', cat:'plumbing', name:'Exercise main water shutoff', s:E(1,'y'),
+    notes:'Turn the main valve off and back on so it does not seize when you need it. Make sure everyone in the home knows where it is.' },
+  { id:'fixture-shutoffs', cat:'plumbing', name:'Exercise sink & toilet shutoff valves', s:E(1,'y'),
+    notes:'Turn the small valves under sinks and behind toilets off and on. Replace any that leak or will not turn.' },
+  { id:'meter-leak', cat:'plumbing', name:'Check water meter for hidden leaks', s:E(6,'m'),
+    notes:'With all water turned off, note the meter reading (or watch the small leak-indicator dial). Wait 1–2 hours without using water; any movement means a hidden leak.' },
+  { id:'pressure', cat:'plumbing', name:'Check water pressure', s:E(1,'y'),
+    notes:'Screw an inexpensive gauge onto a hose bib. 40–80 psi is normal; over 80 psi stresses pipes and fixtures (you may need a pressure-reducing valve).' },
+  { id:'drains-hair', cat:'plumbing', name:'Clear tub & shower drains', s:E(3,'m'),
+    notes:'Pull hair out with a plastic drain-snake strip before it becomes a clog. Avoid harsh chemical drain cleaners.' },
+  { id:'floor-drain', cat:'plumbing', req:['basement'], name:'Refill floor drains & unused traps', s:E(3,'m'),
+    notes:'Pour a gallon of water down basement floor drains and seldom-used sinks/showers so the trap does not dry out and let sewer gas in.' },
+  { id:'caulk-wet', cat:'plumbing', name:'Inspect caulk & grout in wet areas', s:E(6,'m'),
+    notes:'Look for cracked, peeling or moldy caulk around tubs, showers and sinks. Re-caulk before water gets behind the tile.' },
+  { id:'softener-salt', cat:'plumbing', req:['softener'], name:'Add salt to water softener', s:E(1,'m'),
+    notes:'Keep the brine tank at least ¼ full and break up any salt "bridge" with a broom handle.' },
+  { id:'softener-clean', cat:'plumbing', req:['softener'], name:'Clean water softener brine tank', s:E(1,'y'),
+    notes:'Let the salt run low, scoop out sludge, rinse the tank and refill.' },
+  { id:'water-filter', cat:'plumbing', req:['waterfilter'], name:'Replace water filter cartridges', s:E(6,'m'),
+    notes:'Whole-house sediment filters: every 3–6 months. Under-sink / RO filters: per the manufacturer. Write the cartridge model in the item note.' },
+  { id:'well-test', cat:'plumbing', high:1, req:['well'], name:'Test well water', s:E(1,'y'),
+    notes:'EPA recommends testing private wells every year for bacteria, nitrates and pH, using a state-certified lab.' },
+  { id:'well-system', cat:'plumbing', req:['well'], name:'Inspect well cap & pressure tank', s:E(1,'y'),
+    notes:'Check the well cap seal, pressure-tank pre-charge, and listen for the pump short-cycling.' },
+  { id:'septic-inspect', cat:'plumbing', req:['septic'], name:'Septic system inspection', s:E(3,'y'),
+    notes:'EPA recommends a professional inspection at least every 3 years.' },
+  { id:'septic-pump', cat:'plumbing', req:['septic'], name:'Pump septic tank', s:E(4,'y'),
+    notes:'Typically every 3–5 years depending on tank size and household. Keep a record of each pumping.' },
+  { id:'sewer-camera', cat:'plumbing', name:'Sewer line camera inspection', s:E(5,'y'),
+    notes:'Worth doing every few years in older homes or near large trees — catches roots and sagging pipe before a backup.' },
+  { id:'pipe-insulate', cat:'plumbing', req:['cold'], name:'Check pipe insulation before winter', s:M(10),
+    notes:'Check insulation and heat tape on pipes in crawl spaces, garages and exterior walls. Know how to drip faucets during hard freezes.' },
+
+  // ---------------- ELECTRICAL ----------------
+  { id:'gfci', cat:'electrical', high:1, name:'Test GFCI outlets', s:E(3,'m'),
+    notes:'Press TEST (power should cut off), then RESET. Kitchens, bathrooms, garage, laundry, basement and outdoors. Manufacturers suggest monthly; quarterly is a common minimum.' },
+  { id:'afci', cat:'electrical', name:'Test AFCI breakers', s:E(6,'m'),
+    notes:'Press the TEST button on each AFCI (and GFCI) breaker in your panel — it should trip. Switch it fully off, then back on.' },
+  { id:'panel', cat:'electrical', name:'Inspect electrical panel', s:E(1,'y'),
+    notes:'Look (do not open the inner cover) for rust, scorch marks, a warm or buzzing breaker, or a burning smell. Make sure every breaker is labeled. Call an electrician for anything unusual.' },
+  { id:'outdoor-lights', cat:'electrical', name:'Check exterior lights & timers', s:E(6,'m'),
+    notes:'Replace burned-out bulbs, clean fixtures, and adjust motion sensors and timers (especially after time changes).' },
+  { id:'surge', cat:'electrical', name:'Check surge protectors', s:E(1,'y'),
+    notes:'Replace any power strip whose "protected" light is off or that has taken a big surge.' },
+  { id:'cords', cat:'electrical', name:'Inspect cords, outlets & switches', s:E(1,'y'),
+    notes:'Look for frayed cords, overloaded power strips, loose or warm outlets, and discolored switch plates.' },
+  { id:'gen-run', cat:'electrical', req:['generator'], name:'Run generator', s:E(1,'m'),
+    notes:'Run it for 20–30 minutes under load. Standby units usually self-test weekly — confirm it ran. Keep fuel fresh with stabilizer. Never run a portable generator indoors or in the garage.' },
+  { id:'gen-service', cat:'electrical', req:['generator'], name:'Service generator', s:E(1,'y'),
+    notes:'Change oil, check spark plug and air filter, and test the transfer switch.' },
+
+  // ---------------- KITCHEN & APPLIANCES ----------------
+  { id:'hood-filter', cat:'kitchen', name:'Clean range hood filter', s:E(3,'m'),
+    notes:'Soak metal mesh filters in hot water with degreasing dish soap and baking soda. Replace charcoal (recirculating) filters every 3–6 months.' },
+  { id:'dishwasher-filter', cat:'kitchen', name:'Clean dishwasher filter', s:E(1,'m'),
+    notes:'Twist out the filter at the bottom of the tub, rinse and scrub. Run an empty hot cycle with dishwasher cleaner or a cup of vinegar.' },
+  { id:'disposal', cat:'kitchen', name:'Clean garbage disposal', s:E(1,'m'),
+    notes:'Grind a handful of ice cubes and coarse salt, then citrus peels. Scrub under the rubber splash guard.' },
+  { id:'fridge-coils', cat:'kitchen', name:'Vacuum refrigerator coils', s:E(6,'m'),
+    notes:'Dusty coils make the compressor work harder and shorten its life. Unplug, then vacuum the coils (behind the bottom kick plate or on the back).' },
+  { id:'fridge-filter', cat:'kitchen', req:['fridgewater'], name:'Replace refrigerator water filter', s:E(6,'m'),
+    notes:'Most fridge filters are rated for 6 months. Write the filter model number in the item note.' },
+  { id:'fridge-clean', cat:'kitchen', name:'Clean out fridge & freezer', s:E(3,'m'),
+    notes:'Toss expired food, wipe shelves and drawers, and clean the drip pan if accessible.' },
+  { id:'fridge-gasket', cat:'kitchen', name:'Check fridge & freezer door seals', s:E(1,'y'),
+    notes:'Close the door on a dollar bill — if it slides out easily, clean or replace the gasket.' },
+  { id:'oven-clean', cat:'kitchen', name:'Clean oven & stovetop', s:E(6,'m'),
+    notes:'Use the self-clean cycle or baking soda paste. Check that the oven door seal is intact.' },
+  { id:'washer-clean', cat:'kitchen', name:'Clean washing machine', s:E(1,'m'),
+    notes:'Run a cleaning cycle (hot water + washer cleaner or vinegar). On front-loaders, wipe the door gasket and leave the door ajar to dry.' },
+  { id:'lint-screen', cat:'kitchen', name:'Wash dryer lint screen', s:E(6,'m'),
+    notes:'Scrub with warm soapy water to remove the invisible dryer-sheet film that blocks airflow. (Empty the lint trap after every load.)' },
+  { id:'coffee-descale', cat:'kitchen', name:'Descale coffee maker & kettle', s:E(3,'m'),
+    notes:'Run a vinegar or descaling solution through, then 2–3 cycles of plain water.' },
+
+  // ---------------- INTERIOR ----------------
+  { id:'ceiling-fans', cat:'interior', name:'Clean & reverse ceiling fans', s:M(4,10),
+    notes:'Spring: counterclockwise for a cooling breeze. Fall: clockwise on low to push warm air down. Wipe blades with an old pillowcase to trap the dust.' },
+  { id:'weatherstrip', cat:'interior', name:'Check weatherstripping & door sweeps', s:M(10),
+    notes:'Look for daylight or drafts around exterior doors and windows. Replace worn weatherstripping and door sweeps before winter.' },
+  { id:'hinges-locks', cat:'interior', name:'Lubricate hinges, locks & sliding tracks', s:E(1,'y'),
+    notes:'Graphite or silicone on locks, a drop of oil on squeaky hinges, vacuum and lubricate sliding door and window tracks. Tighten loose knobs and cabinet hardware.' },
+  { id:'pest-check', cat:'interior', name:'Check for signs of pests', s:E(3,'m'),
+    notes:'Look for droppings, gnaw marks, ant trails and termite mud tubes along the foundation, in cabinets, the garage and basement.' },
+  { id:'termite', cat:'interior', name:'Professional termite inspection', s:E(1,'y'),
+    notes:'Especially important in warm, humid regions or homes with wood close to the soil.' },
+  { id:'walkthrough', cat:'interior', name:'Whole-house walkthrough for leaks & cracks', s:E(6,'m'),
+    notes:'Look up at ceilings for water stains, check under windows for condensation damage, and note new drywall cracks or doors that start sticking (signs of settling or moisture).' },
+  { id:'basement-moisture', cat:'interior', req:['basement'], name:'Check basement for moisture', s:E(3,'m'),
+    notes:'Look for damp spots, white powder (efflorescence) on walls, musty smells and mold. Keep humidity below 50%.' },
+  { id:'crawlspace', cat:'interior', req:['crawlspace'], name:'Inspect crawl space', s:E(1,'y'),
+    notes:'Check the vapor barrier, insulation, standing water, pests, wood rot and vents.' },
+  { id:'mattress', cat:'interior', name:'Rotate mattresses', s:E(6,'m'),
+    notes:'Rotate 180° (flip only if double-sided) for even wear. Vacuum the mattress while the sheets are off.' },
+  { id:'carpets', cat:'interior', name:'Deep clean carpets & rugs', s:E(1,'y'),
+    notes:'Rent a machine or hire a pro. Move furniture to clean the low-traffic areas too.' },
+  { id:'vacuum-filter', cat:'interior', name:'Clean vacuum filters & brush roll', s:E(3,'m'),
+    notes:'Rinse or replace filters and cut hair off the brush roll so the vacuum keeps its suction.' },
+  { id:'grout-seal', cat:'interior', name:'Seal tile grout', s:E(1,'y'),
+    notes:'Apply penetrating grout sealer in showers and on tile floors to resist stains and moisture.' },
+  { id:'counter-seal', cat:'interior', name:'Reseal stone countertops', s:E(1,'y'),
+    notes:'Water test: if droplets darken the stone within a few minutes, it is time to reseal granite or marble.' },
+
+  // ---------------- ATTIC ----------------
+  { id:'attic-inspect', cat:'attic', high:1, req:['attic'], name:'Full attic inspection', s:M(4,10),
+    notes:'Take a flashlight and look for:\n• Water stains or dark spots on the roof deck and rafters\n• Daylight coming through the roof\n• Damp, matted or compressed insulation\n• Mold or mildew on the sheathing\n• Droppings, nests, chewed wires (rodents, squirrels, raccoons)\n• Wasp nests\nAlso pop up after big storms.' },
+  { id:'attic-insulation', cat:'attic', req:['attic'], name:'Check attic insulation depth', s:M(10),
+    notes:'Most climates need about R-38 to R-60 (roughly 12–18 inches of loose fill). Look for gaps, thin spots and areas disturbed by contractors. Insulation should not block the soffit vents.' },
+  { id:'attic-vent', cat:'attic', req:['attic'], name:'Check attic ventilation', s:M(5),
+    notes:'Make sure soffit vents and baffles are not blocked by insulation and ridge/gable vents are clear. A well-ventilated attic stays within about 10–20°F of the outdoor temperature.' },
+  { id:'attic-pests', cat:'attic', req:['attic'], name:'Check attic for rodents & animal entry', s:M(11),
+    notes:'Rodents move indoors in late fall. Look for droppings, nesting material, chewed wiring or insulation, and gaps around vents, soffits and roof penetrations.' },
+  { id:'attic-frost', cat:'attic', req:['attic'], name:'Check attic for frost & condensation', s:M(1),
+    notes:'On a very cold day, look for frost on nail tips or the underside of the roof deck — signs of warm, moist air leaking up from the house. Seal gaps around light fixtures, pipes, chimneys and the hatch.' },
+  { id:'attic-exhaust', cat:'attic', req:['attic'], name:'Confirm exhaust fans vent outdoors', s:E(2,'y'),
+    notes:'Bathroom, kitchen and dryer ducts must end outside — not dump moist air into the attic. Check that duct connections are secure and insulated.' },
+  { id:'attic-hatch', cat:'attic', req:['attic'], name:'Check attic hatch seal & insulation', s:M(10),
+    notes:'Weatherstrip the hatch or pull-down stairs and add a rigid foam or insulated cover — it is often the biggest air leak in the house.' },
+  { id:'attic-fan', cat:'attic', req:['attic'], name:'Test attic / whole-house fan', s:M(5),
+    notes:'If you have one: confirm it runs, the thermostat or humidistat triggers it, and louvers open and close. Clean dust off the blades.' },
+
+  // ---------------- EXTERIOR ----------------
+  { id:'gutters', cat:'exterior', high:1, name:'Clean gutters & downspouts', s:M(4,11),
+    notes:'Clear leaves and debris and flush downspouts with a hose. Homes under heavy tree cover may need extra cleanings. Check that gutters slope toward downspouts and hangers are tight.' },
+  { id:'grading', cat:'exterior', name:'Check grading & downspout extensions', s:M(4),
+    notes:'Soil should slope away from the foundation (about 6 inches over 10 feet), and downspouts should discharge 4–6 feet from the house.' },
+  { id:'roof-ground', cat:'exterior', name:'Inspect roof from the ground', s:M(4,10),
+    notes:'Use binoculars to look for missing, curled or cracked shingles, damaged flashing around chimneys and vents, and piles of shingle granules in the gutters.' },
+  { id:'roof-pro', cat:'exterior', name:'Professional roof inspection', s:E(3,'y'),
+    notes:'Every 3–5 years, and after major hail or wind storms.' },
+  { id:'ice-dams', cat:'exterior', req:['cold'], name:'Watch for ice dams', s:M(1),
+    notes:'After snow, look for big icicles and ice ridges at the eaves — they signal heat escaping into the attic. Use a roof rake from the ground; never chip at ice on the roof.' },
+  { id:'siding', cat:'exterior', name:'Inspect siding & exterior trim', s:M(5),
+    notes:'Look for cracks, rot, peeling paint and gaps. Probe soft-looking wood trim with a screwdriver. Touch up paint and caulk.' },
+  { id:'exterior-caulk', cat:'exterior', name:'Re-caulk exterior windows & doors', s:M(9),
+    notes:'Check caulk around window and door frames and where pipes and wires enter the house. Replace anything cracked before winter (also keeps bugs out).' },
+  { id:'foundation', cat:'exterior', name:'Inspect foundation for cracks', s:M(4),
+    notes:'Hairline cracks are normal. Watch for cracks that widen, are wider than ¼ inch, or run horizontally — mark the ends with a pencil and date to monitor them.' },
+  { id:'pressure-wash', cat:'exterior', name:'Pressure wash siding, walks & patio', s:M(5),
+    notes:'Use a low setting on siding and keep the spray pointed down so water does not get behind it.' },
+  { id:'windows-wash', cat:'exterior', name:'Wash windows & clear weep holes', s:M(4,10),
+    notes:'Wash the glass inside and out, vacuum the tracks, and clear the little weep holes in window frames so rainwater can drain.' },
+  { id:'screens', cat:'exterior', name:'Clean & repair window screens', s:M(4),
+    notes:'Wash with soapy water, patch small holes, and make sure screens fit snugly. Swap storm windows or doors if you have them.' },
+  { id:'deck-inspect', cat:'exterior', req:['deck'], name:'Inspect deck or porch', s:M(4),
+    notes:'Check for loose or rotted boards, popped nails, wobbly railings and stairs, and the ledger board connection to the house.' },
+  { id:'deck-seal', cat:'exterior', req:['deck'], name:'Clean & seal / stain deck', s:E(2,'y',SUMMER),
+    notes:'Water test: if water soaks in instead of beading up, it is time. Most wood decks need it every 2–3 years.' },
+  { id:'driveway-seal', cat:'exterior', req:['driveway'], name:'Seal asphalt driveway', s:E(3,'y',[6,7,8,9]),
+    notes:'Fill cracks first. Apply sealer on a dry day above 50°F. Every 2–3 years.' },
+  { id:'hose-bibs-off', cat:'exterior', high:1, req:['cold'], name:'Winterize outdoor faucets', s:M(10),
+    notes:'Disconnect hoses, shut off the inside valve to each outdoor faucet (if you have one), and open the outside spigot to drain. Add insulated faucet covers.' },
+  { id:'hose-bibs-on', cat:'exterior', req:['cold'], name:'Turn outdoor water back on & check for leaks', s:M(4),
+    notes:'Open valves slowly and check inside for leaks. A frost-free spigot that split over winter often only leaks when a hose is attached and running.' },
+  { id:'garage-lube', cat:'exterior', req:['garage'], name:'Lubricate garage door', s:E(6,'m'),
+    notes:'Spray rollers, hinges, springs and the opener chain/screw with garage door lubricant. Do not grease the tracks — just wipe them clean. Check the bottom weather seal.' },
+  { id:'drains-clear', cat:'exterior', name:'Clear yard drains & window wells', s:M(10),
+    notes:'Remove leaves from yard drains, window wells, and the street storm drain in front of your house so water flows freely.' },
+  { id:'wasps', cat:'exterior', name:'Check for wasp & hornet nests', s:E(1,'m',GROW),
+    notes:'Look under eaves, deck railings, play sets, and in sheds. Small nests in spring are far easier to remove.' },
+  { id:'ext-paint', cat:'exterior', name:'Repaint exterior', s:E(8,'y',SUMMER),
+    notes:'Typically every 5–10 years depending on siding and climate. Touch up in between.' },
+
+  // ---------------- YARD & GARDEN ----------------
+  { id:'mow', cat:'yard', req:['yard'], name:'Mow the lawn', s:E(1,'w',WARM),
+    notes:'Never cut more than ⅓ of the blade height at once. Keep cool-season grass about 3–4 inches tall. Leave clippings on the lawn — free fertilizer.' },
+  { id:'edge', cat:'yard', req:['yard'], name:'Edge & string-trim', s:E(2,'w',WARM),
+    notes:'Edge along walks and beds and trim around trees, fences and the foundation.' },
+  { id:'spring-cleanup', cat:'yard', req:['yard','garden'], name:'Spring yard cleanup', s:M(3),
+    notes:'Rake out winter debris and matted grass, pick up fallen branches, clean out beds, and look for winter damage to plants, fences and hardscape.' },
+  { id:'pre-emergent', cat:'yard', req:['yard'], name:'Apply crabgrass pre-emergent', s:M(3),
+    notes:'Apply when soil reaches about 55°F (roughly when forsythia blooms). Do not use it where you plan to seed this spring.' },
+  { id:'fertilize', cat:'yard', req:['yard'], name:'Fertilize lawn', s:M(5,9,11),
+    notes:'Cool-season grass (fescue, bluegrass, rye): feed mainly in September and November, with a lighter feeding in late spring.\nWarm-season grass (Bermuda, zoysia, St. Augustine): feed late spring through summer instead — just edit the months.' },
+  { id:'aerate', cat:'yard', req:['yard'], name:'Aerate lawn', s:M(9),
+    notes:'Core-aerate when the soil is moist. Early fall is best for cool-season grass; late spring/early summer for warm-season grass.' },
+  { id:'overseed', cat:'yard', req:['yard'], name:'Overseed thin spots', s:M(9),
+    notes:'Seed right after aerating in early fall for cool-season lawns. Keep the seed moist until it sprouts.' },
+  { id:'dethatch', cat:'yard', req:['yard'], name:'Check thatch & dethatch if needed', s:M(8),
+    notes:'Dig out a small wedge of turf — if the spongy layer between grass and soil is over ½ inch, rake or rent a dethatcher before aerating and seeding.' },
+  { id:'grub', cat:'yard', req:['yard'], name:'Apply grub control', s:M(6),
+    notes:'Preventive grub control works best in early summer before eggs hatch. Brown patches that peel up like carpet are a sign of grubs.' },
+  { id:'soil-test', cat:'yard', req:['yard','garden'], name:'Soil test', s:E(3,'y',[3,4,9,10]),
+    notes:'Every 3 years. Your county extension office offers inexpensive tests that tell you the pH and what nutrients to add.' },
+  { id:'leaves', cat:'yard', req:['trees'], name:'Rake or mulch leaves', s:E(1,'w',[10,11]),
+    notes:'Do not let leaves mat down on the lawn over winter. Running a mulching mower over them feeds the lawn.' },
+  { id:'mulch', cat:'yard', req:['garden'], name:'Refresh mulch in beds', s:M(4),
+    notes:'Keep mulch 2–3 inches deep and pull it back a few inches from tree trunks and stems — no "mulch volcanoes".' },
+  { id:'weed', cat:'yard', req:['garden'], name:'Weed garden beds', s:E(2,'w',GROW),
+    notes:'Pull weeds when the soil is moist and before they go to seed.' },
+  { id:'prune-spring', cat:'yard', req:['garden'], name:'Prune spring-blooming shrubs', s:M(6),
+    notes:'Prune lilacs, forsythia, azaleas and other spring bloomers right after they finish flowering — they set next year’s buds soon after.' },
+  { id:'prune-dormant', cat:'yard', req:['garden','trees'], name:'Dormant pruning (trees & summer bloomers)', s:M(2),
+    notes:'Late winter is ideal for pruning most deciduous trees, fruit trees and summer-blooming shrubs. Remove dead, damaged and crossing branches.' },
+  { id:'hedges', cat:'yard', req:['garden'], name:'Trim hedges', s:M(6,8),
+    notes:'Keep hedges slightly wider at the bottom than the top so lower branches get sunlight.' },
+  { id:'tree-inspect', cat:'yard', req:['trees'], name:'Inspect trees for dead or hazardous limbs', s:M(7),
+    notes:'Look for dead branches, cracks, fungus at the base, and limbs over the roof, driveway or power lines. Call an ISA-certified arborist for big work.' },
+  { id:'trim-roofline', cat:'yard', req:['trees','garden'], name:'Trim branches away from house & roof', s:M(3),
+    notes:'Keep branches about 10 feet from the roof and shrubs 2–3 feet from siding to prevent moisture, pests and roof damage.' },
+  { id:'sprinklers-on', cat:'yard', req:['sprinklers'], name:'Start up sprinkler system', s:M(4),
+    notes:'Turn water on slowly, run each zone, and fix broken or misaligned heads. Update the controller schedule and replace its backup battery.' },
+  { id:'sprinklers-check', cat:'yard', req:['sprinklers'], name:'Check sprinkler coverage', s:E(1,'m',SUMMER),
+    notes:'Run each zone and look for clogged, tilted or sunken heads, overspray onto pavement, and dry spots. Adjust run times for the weather.' },
+  { id:'sprinklers-winterize', cat:'yard', high:1, req:['sprinklers'], name:'Winterize sprinklers (blow out lines)', s:M(10),
+    notes:'Before the first hard freeze: shut off the water, drain or blow out the lines with compressed air, and protect the backflow preventer.' },
+  { id:'mower-blade', cat:'yard', req:['yard'], name:'Sharpen mower blade', s:M(4,7),
+    notes:'A dull blade tears grass and invites disease. Sharpen once or twice a season (about every 25 hours of mowing).' },
+  { id:'mower-tuneup', cat:'yard', req:['yard'], name:'Mower tune-up', s:M(3),
+    notes:'Change the oil, replace the air filter and spark plug, and check the belt before the first mow. Electric mowers: charge the battery and clean the deck.' },
+  { id:'mower-winterize', cat:'yard', req:['yard'], name:'Winterize mower & small engines', s:M(11),
+    notes:'Add fuel stabilizer and run it through (or run the tank dry), clean the deck, and store batteries indoors.' },
+  { id:'hoses-store', cat:'yard', req:['yard','garden'], name:'Drain & store garden hoses', s:M(10),
+    notes:'Drain, coil and store hoses and nozzles indoors to keep them from cracking.' },
+  { id:'tools-clean', cat:'yard', req:['garden'], name:'Clean, sharpen & oil garden tools', s:M(11),
+    notes:'Scrub off soil, sharpen pruners and shovels, and wipe the metal with oil. Sand and oil wooden handles.' },
+  { id:'bulbs', cat:'yard', req:['garden'], name:'Plant spring bulbs', s:M(10),
+    notes:'Plant tulips, daffodils and crocus about 6 weeks before the ground freezes, roughly 3× as deep as the bulb is tall.' },
+  { id:'fall-cleanup', cat:'yard', req:['garden'], name:'Fall garden cleanup', s:M(11),
+    notes:'Cut back spent perennials (leave seed heads for birds if you like), remove diseased foliage, and pull annuals. Water evergreens deeply before the ground freezes.' },
+  { id:'divide', cat:'yard', req:['garden'], name:'Divide overcrowded perennials', s:E(3,'y',[9]),
+    notes:'Hostas, daylilies, irises and others bloom better when divided every 3–4 years.' },
+  { id:'compost', cat:'yard', req:['garden'], name:'Turn compost pile', s:E(2,'w',WARM),
+    notes:'If you compost: turning adds oxygen and speeds things up. Keep it about as damp as a wrung-out sponge.' },
+  { id:'mosquito', cat:'yard', req:['yard'], name:'Dump standing water', s:E(1,'w',SUMMER),
+    notes:'Empty saucers, buckets, toys, tarps and birdbaths — mosquitoes can breed in a bottle cap of water within a week.' },
+  { id:'grill', cat:'yard', req:['yard'], name:'Deep clean grill & check gas hose', s:M(4),
+    notes:'Clean grates and burners and empty the grease tray. Brush soapy water on gas connections — bubbles mean a leak.' },
+  { id:'fence', cat:'yard', req:['yard'], name:'Inspect fences & gates', s:M(4),
+    notes:'Look for loose posts, rot, and sagging gates. Tighten hinges and latches, especially around pools.' },
+  { id:'patio-store', cat:'yard', req:['yard'], name:'Clean & store patio furniture', s:M(10),
+    notes:'Wash cushions and frames, then store or cover them for winter.' },
+  { id:'snow-prep', cat:'yard', req:['cold'], name:'Prep snow blower & winter supplies', s:M(10),
+    notes:'Change oil, check the spark plug and shear pins, add fresh fuel, and stock ice melt and shovels before the first storm.' },
+
+  // ---------------- POOL & SPA ----------------
+  { id:'pool-chem', cat:'pool', req:['pool'], name:'Test & balance pool water', s:E(1,'w',SUMMER),
+    notes:'Free chlorine 1–3 ppm, pH 7.4–7.6, alkalinity 80–120 ppm. Shock after heavy use or storms.' },
+  { id:'pool-skim', cat:'pool', req:['pool'], name:'Empty skimmer & pump baskets', s:E(1,'w',SUMMER),
+    notes:'Clear baskets, skim the surface and brush walls to prevent algae.' },
+  { id:'pool-filter', cat:'pool', req:['pool'], name:'Clean or backwash pool filter', s:E(1,'m',SUMMER),
+    notes:'Backwash sand/DE filters or hose off cartridges when the pressure reads 8–10 psi above clean.' },
+  { id:'pool-open', cat:'pool', req:['pool'], name:'Open pool for the season', s:M(5),
+    notes:'Remove and clean the cover, reconnect equipment, fill to level, and balance the water before swimming.' },
+  { id:'pool-close', cat:'pool', req:['pool'], name:'Close & winterize pool', s:M(9),
+    notes:'Balance and shock, lower the water level, blow out lines, add winterizing chemicals and secure the cover.' },
+  { id:'spa-chem', cat:'pool', req:['hottub'], name:'Test hot tub water', s:E(1,'w'),
+    notes:'Check sanitizer and pH a few times a week when in use.' },
+  { id:'spa-filter', cat:'pool', req:['hottub'], name:'Rinse hot tub filter', s:E(1,'m'),
+    notes:'Rinse monthly, deep-soak in filter cleaner every 3 months, and replace yearly.' },
+  { id:'spa-drain', cat:'pool', req:['hottub'], name:'Drain & refill hot tub', s:E(3,'m'),
+    notes:'Flush the lines with a purge product first, then drain, wipe the shell and refill.' },
+];
+</script>
+
+<script>
+/* =====================================================================
+   APP
+   ===================================================================== */
+const STORE_KEY = 'homeapp.v1';
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const UNITS = { d: ['day','days'], w: ['week','weeks'], m: ['month','months'], y: ['year','years'] };
+
+/* ---------- tiny helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const clone = o => JSON.parse(JSON.stringify(o));
+const hashFrac = s => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return ((h >>> 0) % 10007) / 10007; };
+const last = a => a[a.length - 1];
+const plural = (n, one, many) => `${n} ${n === 1 ? one : (many || one + 's')}`;
+
+/* ---------- dates (all local, as YYYY-MM-DD strings) ---------- */
+const pad = n => String(n).padStart(2, '0');
+const toISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d, 12); };
+const today = () => toISO(new Date());
+const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return toISO(d); };
+const addMonths = (s, n) => {
+  const d = parse(s), day = d.getDate();
+  d.setDate(1); d.setMonth(d.getMonth() + n);
+  d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()));
+  return toISO(d);
+};
+const daysBetween = (a, b) => Math.round((parse(b) - parse(a)) / 86400000); // b − a
+const monthOf = s => +s.slice(5, 7);
+const yearOf = s => +s.slice(0, 4);
+const endOfMonth = (y, m) => toISO(new Date(y, m, 0, 12));     // m = 1..12
+const startOfNextMonth = s => { const d = parse(s); return toISO(new Date(d.getFullYear(), d.getMonth() + 1, 1, 12)); };
+const fmtDate = (s, withYear) => {
+  if (!s) return '—';
+  const d = parse(s), y = d.getFullYear();
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}${(withYear || y !== new Date().getFullYear()) ? ', ' + y : ''}`;
+};
+const fmtLong = s => parse(s).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+
+/* ---------- scheduling ---------- */
+function addInterval(s, every, unit) {
+  if (unit === 'd') return addDays(s, every);
+  if (unit === 'w') return addDays(s, every * 7);
+  if (unit === 'm') return addMonths(s, every);
+  return addMonths(s, every * 12);
+}
+function rollIntoSeason(s, season) {
+  if (!season || !season.length || season.length >= 12) return s;
+  let guard = 0;
+  while (!season.includes(monthOf(s)) && guard++ < 24) s = startOfNextMonth(s);
+  return s;
+}
+function occurrences(months, fromYear, toYear) {
+  const out = [];
+  for (let y = fromYear; y <= toYear; y++) for (const m of months) out.push(endOfMonth(y, m));
+  return out.sort();
+}
+/** When is the next one due, given it was done (or was due) on `from`? */
+function nextDue(sched, from) {
+  if (sched.type === 'months') {
+    const months = sched.months.length ? sched.months : [1];
+    const y = yearOf(from), occ = occurrences(months, y - 1, y + 2);
+    // Which occurrence did `from` satisfy? The one whose month it falls in, else the nearest.
+    let o = months.includes(monthOf(from)) ? endOfMonth(y, monthOf(from)) : null;
+    if (!o) o = occ.reduce((best, c) => Math.abs(daysBetween(c, from)) < Math.abs(daysBetween(best, from)) ? c : best, occ[0]);
+    return occ.find(c => c > o) || endOfMonth(y + 1, months[0]);
+  }
+  return rollIntoSeason(addInterval(from, Math.max(1, sched.every | 0), sched.unit), sched.season);
+}
+function intervalDays(sched) {
+  if (sched.type === 'months') return 365 / Math.max(1, sched.months.length);
+  return Math.max(1, sched.every) * ({ d: 1, w: 7, m: 30.44, y: 365.25 }[sched.unit]);
+}
+/** First due date for something never done. Staggers so a new list isn't all due at once. */
+function firstDue(sched, seed, high) {
+  const t = today();
+  if (sched.type === 'months') return occurrences(sched.months.length ? sched.months : [1], yearOf(t), yearOf(t) + 1).find(c => c >= t);
+  const I = intervalDays(sched);
+  let spread = I <= 31 ? I : Math.min(I / 2, 180);
+  if (high) spread = Math.min(spread, 7);
+  return rollIntoSeason(addDays(t, Math.floor(hashFrac(seed) * spread)), sched.season);
+}
+function describeMonths(ms) {
+  const s = [...ms].sort((a, b) => a - b);
+  if (!s.length) return '';
+  if (s.length === 12) return 'all year';
+  // find contiguous run (allowing wrap)
+  const set = new Set(s);
+  let start = s.find(m => !set.has(m === 1 ? 12 : m - 1));
+  if (start !== undefined) {
+    let len = 1, m = start;
+    while (set.has(m === 12 ? 1 : m + 1) && len < 12) { m = m === 12 ? 1 : m + 1; len++; }
+    if (len === s.length && len >= 3) return `${MONTHS[start - 1]}–${MONTHS[m - 1]}`;
+  }
+  const names = s.map(m => MONTHS[m - 1]);
+  return names.length <= 2 ? names.join(' & ') : names.slice(0, -1).join(', ') + ' & ' + last(names);
+}
+function describeSched(s) {
+  if (!s) return '';
+  if (s.type === 'months') {
+    if (s.months.length === 1) return `Every ${MONTHS_LONG[s.months[0] - 1]}`;
+    return `Every ${describeMonths(s.months)}`;
+  }
+  const n = Math.max(1, s.every | 0), u = s.unit;
+  let base;
+  if (n === 1) base = { d: 'Daily', w: 'Weekly', m: 'Monthly', y: 'Yearly' }[u];
+  else if (u === 'm' && n === 6) base = 'Every 6 months';
+  else base = `Every ${n} ${UNITS[u][1]}`;
+  if (s.season && s.season.length && s.season.length < 12) base += `, ${describeMonths(s.season)}`;
+  return base;
+}
+const sameSched = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const shiftMonth = m => ((m - 1 + 6) % 12) + 1;
+function shiftSched(s) {
+  const c = clone(s);
+  if (c.type === 'months') c.months = c.months.map(shiftMonth).sort((a, b) => a - b);
+  else if (c.season) c.season = c.season.map(shiftMonth).sort((a, b) => a - b);
+  return c;
+}
+
+/* ---------- state ---------- */
+let state = load();
+const ui = {
+  tab: safeGet('homeapp.tab') || 'due',
+  dueCat: 'all', tasksCat: 'all', tasksSeg: 'mine', query: '', libQuery: '', libFit: true,
+  showLater: false, showRecent: false,
+};
+function safeGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function safeSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+function blankState() {
+  return { version: 1, tasks: [], settings: { features: [...DEFAULT_FEATURES], hemisphere: 'N', theme: 'auto', soonDays: 7, onboarded: false, lastBackup: null, backupNagUntil: null } };
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return migrate(JSON.parse(raw));
+  } catch (e) { console.warn('Could not load saved data', e); }
+  return blankState();
+}
+function migrate(d) {
+  const b = blankState();
+  if (!d || !Array.isArray(d.tasks)) return b;
+  d.settings = Object.assign(b.settings, d.settings || {});
+  for (const t of d.tasks) {
+    t.id ||= uid(); t.cat = CATS[t.cat] ? t.cat : 'other'; t.notes ||= ''; t.items ||= [];
+    t.sched ||= E(1, 'm');
+    for (const it of t.items) { it.id ||= uid(); it.hist ||= []; it.label ||= ''; it.notes ||= ''; it.due ||= today(); }
+    if (!t.items.length) t.items.push(newItem(t, ''));
+  }
+  d.version = 1;
+  return d;
+}
+let persistAsked = false;
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch (e) { toast('⚠️ Could not save — storage is full or blocked'); }
+  if (!persistAsked && navigator.storage && navigator.storage.persist) { persistAsked = true; navigator.storage.persist().catch(() => {}); }
+}
+function commit() { save(); renderAll(); }
+
+const findTask = id => state.tasks.find(t => t.id === id);
+const findItem = (t, iid) => t && t.items.find(i => i.id === iid);
+const schedOf = (t, it) => (it && it.sched) || t.sched;
+const itemName = (t, it) => it.label || (t.items.length > 1 ? `#${t.items.indexOf(it) + 1}` : '');
+const iconOf = t => t.icon || CATS[t.cat].icon;
+const colorOf = t => CATS[t.cat].color;
+
+function newItem(task, label, due) {
+  return { id: uid(), label: label || '', due: due || firstDue(task.sched, task.libId || task.name || uid(), task.high), last: null, notes: '', hist: [] };
+}
+function taskFromLib(lib) {
+  const sched = state.settings.hemisphere === 'S' ? shiftSched(lib.s) : clone(lib.s);
+  const t = { id: uid(), libId: lib.id, name: lib.name, cat: lib.cat, notes: lib.notes, sched, high: !!lib.high, items: [], created: today() };
+  t.items.push(newItem(t, ''));
+  return t;
+}
+const libFits = (lib, feats) => !lib.req || lib.req.some(r => feats.includes(r));
+const addedLibIds = () => new Set(state.tasks.map(t => t.libId).filter(Boolean));
+
+/* ---------- status ---------- */
+function status(due) {
+  const d = daysBetween(today(), due);
+  if (d < 0) return 'overdue';
+  if (d <= state.settings.soonDays) return 'soon';
+  return 'ok';
+}
+function dueText(t, it) {
+  const s = schedOf(t, it), d = daysBetween(today(), it.due);
+  if (d < 0) {
+    const n = -d;
+    if (n < 14) return `${plural(n, 'day')} overdue`;
+    if (n < 60) return `${Math.round(n / 7)} weeks overdue`;
+    return `${Math.round(n / 30.44)} months overdue`;
+  }
+  if (s.type === 'months' && monthOf(it.due) === monthOf(today()) && yearOf(it.due) === yearOf(today())) return `Due this month`;
+  if (d === 0) return 'Due today';
+  if (d === 1) return 'Due tomorrow';
+  if (d < 7) return `Due ${parse(it.due).toLocaleDateString(undefined, { weekday: 'long' })}`;
+  if (s.type === 'months') return `Due in ${MONTHS_LONG[monthOf(it.due) - 1]}${yearOf(it.due) !== yearOf(today()) ? ' ' + yearOf(it.due) : ''}`;
+  if (d < 45) return `Due in ${plural(d, 'day')}`;
+  return `Due ${fmtDate(it.due)}`;
+}
+function allItems() {
+  const out = [];
+  for (const t of state.tasks) for (const it of t.items) out.push({ t, it });
+  return out.sort((a, b) => a.it.due.localeCompare(b.it.due) || (b.t.high ? 1 : 0) - (a.t.high ? 1 : 0) || a.t.name.localeCompare(b.t.name));
+}
+
+/* ---------- actions on items ---------- */
+let undoSnap = null;
+function snapshot(t, label) { undoSnap = { taskId: t.id, data: clone(t), label }; }
+function undo() {
+  if (!undoSnap) return;
+  const i = state.tasks.findIndex(t => t.id === undoSnap.taskId);
+  if (i >= 0) state.tasks[i] = undoSnap.data; else state.tasks.push(undoSnap.data);
+  undoSnap = null; commit(); toast('Undone');
+}
+function markDone(t, it, date, note) {
+  snapshot(t);
+  date = date || today();
+  it.hist.push({ d: date, n: note || '' });
+  it.hist.sort((a, b) => a.d.localeCompare(b.d));
+  it.last = last(it.hist).d;
+  it.due = nextDue(schedOf(t, it), it.last);
+  commit();
+  toast(`Done ✓ Next: ${fmtDate(it.due)}`, 'Undo', undo);
+}
+function skipItem(t, it) {
+  snapshot(t);
+  const s = schedOf(t, it), t0 = today();
+  let d = nextDue(s, it.due), g = 0;
+  while (d <= t0 && g++ < 500) d = nextDue(s, d);
+  it.due = d; commit();
+  toast(`Skipped. Next: ${fmtDate(d)}`, 'Undo', undo);
+}
+function snoozeItem(t, it, days, date) {
+  snapshot(t);
+  it.due = date || addDays(today(), days);
+  commit();
+  toast(`Snoozed to ${fmtDate(it.due)}`, 'Undo', undo);
+}
+function recalcItem(t, it) {
+  const s = schedOf(t, it);
+  if (it.last) it.due = nextDue(s, it.last);
+  else if (s.type === 'months') it.due = firstDue(s, it.id);
+  else it.due = rollIntoSeason(it.due, s.season);
+}
+
+/* =====================================================================
+   RENDERING
+   ===================================================================== */
+const ICONS = {
+  due: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+  plan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7.5 13.5h2M11 13.5h2M14.5 13.5h2M7.5 17h2M11 17h2"/></svg>',
+  tasks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  dots: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  skip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 5 8 7-8 7zM17 5v14"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  hist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
+  house: '<svg viewBox="0 0 64 64"><path d="M32 10 8 30h7v22h34V30h7z" fill="#f4f1ec"/><path d="m23 37 7 7 12-13" fill="none" stroke="#2b6e5f" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+
+function renderAll() {
+  applyTheme();
+  renderTabbar();
+  renderMain();
+  for (const s of sheetStack) if (s.render) s.render();
+}
+function applyTheme() {
+  const th = state.settings.theme;
+  if (th === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', th);
+}
+function renderTabbar() {
+  const overdue = allItems().filter(x => status(x.it.due) === 'overdue').length;
+  const tabs = [['due', 'Home'], ['plan', 'Plan'], ['tasks', 'Tasks'], ['settings', 'Settings']];
+  $('#tabbar').innerHTML = tabs.map(([k, label]) => `
+    <button class="tab" data-act="tab" data-tab="${k}" ${ui.tab === k ? 'aria-current="page"' : ''}>
+      ${ICONS[k]}<span>${label}</span>${k === 'due' && overdue ? `<span class="badge">${overdue}</span>` : ''}
+    </button>`).join('');
+}
+function renderMain() {
+  const views = { due: viewDue, plan: viewPlan, tasks: viewTasks, settings: viewSettings };
+  (views[ui.tab] || viewDue)();
+}
+function setTop(title, sub, actionHTML = '') {
+  $('#topbar').innerHTML = `<h1>${sub ? `<span class="sub">${esc(sub)}</span>` : ''}${esc(title)}</h1>${actionHTML}`;
+}
+
+function rowHTML(t, it, opts = {}) {
+  const st = status(it.due), s = schedOf(t, it);
+  const nm = itemName(t, it), label = nm ? ` <span class="lbl">· ${esc(nm)}</span>` : '';
+  return `
+  <div class="row" data-act="open" data-t="${t.id}" data-i="${it.id}" role="button" tabindex="0">
+    <div class="ico" style="--c:${colorOf(t)}" aria-hidden="true">${esc(iconOf(t))}</div>
+    <div class="row-main">
+      <div class="row-title">${esc(t.name)}${label}</div>
+      <div class="row-meta"><span class="due ${st}">${esc(dueText(t, it))}</span><span class="dot">${esc(describeSched(s))}</span>${t.high ? '<span class="dot star">★</span>' : ''}</div>
+    </div>
+    ${opts.noCheck ? '' : `<button class="check ${st === 'overdue' ? 'overdue' : ''}" data-act="done" data-t="${t.id}" data-i="${it.id}" aria-label="Mark ${esc(t.name)} done">${ICONS.check}</button>`}
+  </div>`;
+}
+function catChips(cur, act, cats) {
+  return `<div class="chips" role="toolbar" aria-label="Filter by category">
+    <button class="chip" data-act="${act}" data-cat="all" aria-pressed="${cur === 'all'}">All</button>
+    ${cats.map(c => `<button class="chip" data-act="${act}" data-cat="${c}" aria-pressed="${cur === c}">${CATS[c].icon} ${esc(CATS[c].name)}</button>`).join('')}
+  </div>`;
+}
+const usedCats = () => Object.keys(CATS).filter(c => state.tasks.some(t => t.cat === c));
+
+/* ---------- HOME / DUE ---------- */
+function viewDue() {
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  setTop('Your Home', `${greet} · ${new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}`,
+    `<button class="icon-btn" data-act="new-task" aria-label="Add a task">${ICONS.plus}</button>`);
+  const main = $('#main');
+  if (!state.tasks.length) {
+    main.innerHTML = `<div class="card empty"><div class="big">🏡</div><h3>No tasks yet</h3>
+      <p>Start from our list of ${LIBRARY.length} common home maintenance tasks, or add your own.</p>
+      <div class="stack"><button class="btn btn-primary btn-block" data-act="onboard">Build my list</button>
+      <button class="btn btn-block" data-act="new-task">Add a custom task</button></div></div>`;
+    return;
+  }
+  const all = allItems();
+  const items = ui.dueCat === 'all' ? all : all.filter(x => x.t.cat === ui.dueCat);
+  const t0 = today(), soon = state.settings.soonDays;
+  const groups = { overdue: [], soon: [], month: [], later: [] };
+  for (const x of items) {
+    const d = daysBetween(t0, x.it.due);
+    if (d < 0) groups.overdue.push(x);
+    else if (d <= soon) groups.soon.push(x);
+    else if (d <= 31) groups.month.push(x);
+    else groups.later.push(x);
+  }
+  const nOver = all.filter(x => x.it.due < t0).length;
+  const nSoon = all.filter(x => { const d = daysBetween(t0, x.it.due); return d >= 0 && d <= soon; }).length;
+  const onTrack = all.length ? Math.round(100 * (all.length - nOver) / all.length) : 100;
+  const doneMonth = state.tasks.reduce((n, t) => n + t.items.reduce((m, it) => m + it.hist.filter(h => h.d.slice(0, 7) === t0.slice(0, 7)).length, 0), 0);
+
+  let html = `<div class="card hero">
+    <div class="stat ${nOver ? 'red' : ''}"><b>${nOver}</b><span>Overdue</span></div>
+    <div class="stat ${nSoon ? 'amber' : ''}"><b>${nSoon}</b><span>Due soon</span></div>
+    <div class="stat green"><b>${onTrack}%</b><span>On track</span></div>
+  </div>`;
+
+  const s = state.settings;
+  const needsBackup = state.tasks.length && (!s.lastBackup || daysBetween(s.lastBackup, t0) > 60) && (!s.backupNagUntil || s.backupNagUntil < t0) && daysBetween(state.tasks[0].created || t0, t0) > 7;
+  if (needsBackup) html += `<div class="banner"><div class="t"><b>Back up your list</b>Your data lives only on this phone.</div>
+      <button class="btn btn-sm btn-primary" data-act="backup">Back up</button><button class="btn btn-sm" data-act="nag-later">Later</button></div>`;
+
+  html += `<div style="margin-top:14px">${catChips(ui.dueCat, 'due-cat', usedCats())}</div>`;
+
+  const sect = (key, title, list, cls = '') => list.length ? `
+    <div class="section-h ${cls}"><h2>${title}</h2><span class="count">${list.length}</span></div>
+    <div class="list">${list.map(x => rowHTML(x.t, x.it)).join('')}</div>` : '';
+
+  if (!groups.overdue.length && !groups.soon.length) {
+    html += `<div class="card caught" style="margin-top:14px"><div class="big">🎉</div><h3>All caught up</h3>
+      <p>Nothing due in the next ${soon} days${groups.month.length ? ` — ${plural(groups.month.length, 'task')} coming up this month.` : '.'}</p></div>`;
+  }
+  html += sect('overdue', 'Overdue', groups.overdue, 'overdue');
+  html += sect('soon', `Next ${soon} days`, groups.soon, 'soon');
+  html += sect('month', 'Coming up this month', groups.month);
+  if (groups.later.length) {
+    const shown = ui.showLater ? groups.later : groups.later.slice(0, 5);
+    html += `<div class="section-h"><h2>Later</h2><span class="count">${groups.later.length}</span></div>
+      <div class="list">${shown.map(x => rowHTML(x.t, x.it)).join('')}
+      ${groups.later.length > 5 ? `<button class="more-btn" data-act="toggle-later">${ui.showLater ? 'Show less' : `Show all ${groups.later.length}`}</button>` : ''}</div>`;
+  }
+  // recently done
+  const recent = [];
+  for (const t of state.tasks) for (const it of t.items) for (const hh of it.hist) recent.push({ t, it, h: hh });
+  recent.sort((a, b) => b.h.d.localeCompare(a.h.d));
+  if (recent.length) {
+    const r = recent.slice(0, ui.showRecent ? 25 : 4);
+    html += `<div class="section-h"><h2>Recently done</h2><span class="count">${doneMonth} this month</span></div>
+      <div class="list">${r.map(x => `
+        <div class="row compact" data-act="open" data-t="${x.t.id}" data-i="${x.it.id}" role="button" tabindex="0">
+          <div class="ico" style="--c:${colorOf(x.t)}">${esc(iconOf(x.t))}</div>
+          <div class="row-main"><div class="row-title">${esc(x.t.name)}${itemName(x.t, x.it) ? ` <span class="lbl">· ${esc(itemName(x.t, x.it))}</span>` : ''}</div>
+          ${x.h.n ? `<div class="row-meta">${esc(x.h.n)}</div>` : ''}</div>
+          <div class="row-right">${fmtDate(x.h.d)}</div>
+        </div>`).join('')}
+        ${recent.length > 4 ? `<button class="more-btn" data-act="toggle-recent">${ui.showRecent ? 'Show less' : 'Show more'}</button>` : ''}</div>`;
+  }
+  main.innerHTML = html;
+}
+
+/* ---------- PLAN (next 12 months) ---------- */
+function viewPlan() {
+  setTop('Year Plan', 'Next 12 months');
+  const main = $('#main');
+  if (!state.tasks.length) { main.innerHTML = `<div class="card empty"><div class="big">🗓️</div><h3>Nothing planned yet</h3><p>Add some tasks and you'll see the year at a glance.</p><button class="btn btn-primary" data-act="onboard">Build my list</button></div>`; return; }
+  const t0 = today(), horizon = addMonths(t0, 12), curKey = t0.slice(0, 7);
+  const months = new Map();
+  for (const t of state.tasks) {
+    if (ui.dueCat !== 'all' && t.cat !== ui.dueCat) continue;
+    for (const it of t.items) {
+      const s = schedOf(t, it);
+      let d = it.due, g = 0;
+      if (d < t0) { push(curKey, t, it, d, true); d = nextDue(s, t0); }
+      while (d <= horizon && g++ < 120) { push(d.slice(0, 7), t, it, d, false); d = nextDue(s, d); }
+    }
+  }
+  function push(key, t, it, d, overdue) {
+    if (!months.has(key)) months.set(key, new Map());
+    const m = months.get(key), k = it.id;
+    if (!m.has(k)) m.set(k, { t, it, dates: [], overdue: false });
+    const e = m.get(k); e.dates.push(d); e.overdue ||= overdue;
+  }
+  const keys = [...months.keys()].sort();
+  let html = catChips(ui.dueCat, 'due-cat', usedCats());
+  for (const key of keys) {
+    const [y, m] = key.split('-').map(Number);
+    const entries = [...months.get(key).values()].sort((a, b) => (b.overdue - a.overdue) || a.dates[0].localeCompare(b.dates[0]) || a.t.name.localeCompare(b.t.name));
+    const title = `${MONTHS_LONG[m - 1]}${y !== yearOf(t0) ? ' ' + y : ''}`;
+    html += `<div class="month"><div class="month-h"><h2>${key === curKey ? 'This month' : title}</h2><span>${plural(entries.length, 'task')}</span></div>
+      <div class="list">${entries.map(e => {
+        const s = schedOf(e.t, e.it);
+        const right = e.overdue ? '<span class="pill red">Overdue</span>'
+          : e.dates.length > 1 ? `<span class="pill">${e.dates.length}×</span>`
+          : s.type === 'months' ? '<span class="muted">Anytime</span>' : fmtDate(e.dates[0]).replace(/, \d{4}$/, '');
+        return `<div class="row compact" data-act="open" data-t="${e.t.id}" data-i="${e.it.id}" role="button" tabindex="0">
+          <div class="ico" style="--c:${colorOf(e.t)}">${esc(iconOf(e.t))}</div>
+          <div class="row-main"><div class="row-title">${esc(e.t.name)}${itemName(e.t, e.it) ? ` <span class="lbl">· ${esc(itemName(e.t, e.it))}</span>` : ''}</div>
+          <div class="row-meta">${esc(describeSched(s))}</div></div>
+          <div class="row-right">${right}</div></div>`;
+      }).join('')}</div></div>`;
+  }
+  main.innerHTML = html;
+}
+
+/* ---------- TASKS (mine + suggestions) ---------- */
+function viewTasks() {
+  setTop('Tasks', `${plural(state.tasks.length, 'task')} tracked`, `<button class="icon-btn" data-act="new-task" aria-label="Add a custom task">${ICONS.plus}</button>`);
+  let html = `<div class="seg" role="tablist" style="margin:4px 0 10px">
+    <button data-act="tasks-seg" data-seg="mine" aria-pressed="${ui.tasksSeg === 'mine'}">My tasks</button>
+    <button data-act="tasks-seg" data-seg="ideas" aria-pressed="${ui.tasksSeg === 'ideas'}">Browse ideas (${LIBRARY.length})</button></div>`;
+  const mine = ui.tasksSeg === 'mine';
+  if (mine && !state.tasks.length) html += myTasksEmptyHTML();
+  else html += (mine ? myTasksHeaderHTML() : libraryHeaderHTML()) + `<div id="results">${mine ? myTasksHTML() : libraryHTML()}</div>`;
+  $('#main').innerHTML = html;
+  const q = $('#q');
+  if (q) q.addEventListener('input', e => {
+    if (mine) ui.query = e.target.value; else ui.libQuery = e.target.value;
+    $('#results').innerHTML = mine ? myTasksHTML() : libraryHTML();
+  });
+}
+function myTasksEmptyHTML() {
+  return `<div class="card empty"><div class="big">📝</div><h3>No tasks yet</h3><p>Browse ideas to add common ones, or create your own.</p>
+    <div class="stack"><button class="btn btn-primary btn-block" data-act="tasks-seg" data-seg="ideas">Browse ideas</button><button class="btn btn-block" data-act="new-task">Create a custom task</button></div></div>`;
+}
+function myTasksHeaderHTML() {
+  return `<label class="search">${ICONS.search}<input id="q" type="search" placeholder="Search your tasks" value="${esc(ui.query)}" autocomplete="off"></label>`
+    + catChips(ui.tasksCat, 'tasks-cat', usedCats());
+}
+function myTasksHTML() {
+  const q = ui.query.trim().toLowerCase();
+  let html = '', any = false;
+  for (const c of Object.keys(CATS)) {
+    if (ui.tasksCat !== 'all' && ui.tasksCat !== c) continue;
+    const list = state.tasks.filter(t => t.cat === c && (!q || (t.name + ' ' + t.notes + ' ' + t.items.map(i => i.label + ' ' + i.notes).join(' ')).toLowerCase().includes(q)))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    if (!list.length) continue;
+    any = true;
+    html += `<div class="cat-h">${CATS[c].icon} ${esc(CATS[c].name)}<span class="n">${list.length}</span></div><div class="list">`;
+    for (const t of list) {
+      const next = t.items.reduce((a, b) => a.due < b.due ? a : b);
+      const st = status(next.due);
+      html += `<div class="row" data-act="open" data-t="${t.id}" role="button" tabindex="0">
+        <div class="ico" style="--c:${colorOf(t)}">${esc(iconOf(t))}</div>
+        <div class="row-main"><div class="row-title">${esc(t.name)}</div>
+        <div class="row-meta"><span>${esc(describeSched(t.sched))}</span>${t.items.length > 1 ? `<span class="dot">${t.items.length} items</span>` : ''}${t.high ? '<span class="dot star">★</span>' : ''}</div></div>
+        <div class="row-right"><span class="due ${st}">${st === 'overdue' ? 'Overdue' : fmtDate(next.due)}</span></div></div>`;
+    }
+    html += `</div>`;
+  }
+  if (!any) html += `<div class="empty"><p>No tasks match “${esc(ui.query)}”.</p></div>`;
+  html += `<div style="margin-top:18px"><button class="btn btn-soft btn-block" data-act="new-task">${ICONS.plus} Create a custom task</button></div>`;
+  return html;
+}
+function libraryHeaderHTML() {
+  return `<label class="search">${ICONS.search}<input id="q" type="search" placeholder="Search ${LIBRARY.length} ideas" value="${esc(ui.libQuery)}" autocomplete="off"></label>
+    <button class="toggle" data-act="lib-fit" role="switch" aria-checked="${ui.libFit}"><span class="lab">Only show what fits my home<small>Based on your home features in Settings</small></span><span class="sw"></span></button>`;
+}
+function libraryHTML() {
+  const q = ui.libQuery.trim().toLowerCase(), feats = state.settings.features, added = addedLibIds();
+  let html = '', shown = 0;
+  for (const c of Object.keys(CATS)) {
+    const list = LIBRARY.filter(l => l.cat === c && (!ui.libFit || libFits(l, feats)) && (!q || (l.name + ' ' + l.notes).toLowerCase().includes(q)));
+    if (!list.length) continue;
+    shown += list.length;
+    const notAdded = list.filter(l => !added.has(l.id)).length;
+    html += `<div class="cat-h">${CATS[c].icon} ${esc(CATS[c].name)}<span class="n">${notAdded ? `<button class="link-btn" data-act="lib-add-cat" data-cat="${c}">Add all ${notAdded}</button>` : 'All added'}</span></div><div class="list">`;
+    for (const l of list) {
+      const has = added.has(l.id);
+      const sched = state.settings.hemisphere === 'S' ? shiftSched(l.s) : l.s;
+      html += `<div class="lib-row-wrap"><details><summary class="row" style="list-style:none">
+        <div class="ico" style="--c:${CATS[l.cat].color}">${CATS[l.cat].icon}</div>
+        <div class="row-main"><div class="row-title">${esc(l.name)}</div><div class="row-meta"><span>${esc(describeSched(sched))}</span>${l.high ? '<span class="dot star">★ Important</span>' : ''}</div></div>
+        ${has ? `<button class="add-btn added" data-act="lib-open" data-lib="${l.id}">✓ Added</button>` : `<button class="add-btn" data-act="lib-add" data-lib="${l.id}">${ICONS.plus.replace('<svg', '<svg width="15" height="15"')} Add</button>`}
+        </summary><div class="lib-notes">${esc(l.notes).replace(/\n/g, '<br>')}</div></details></div>`;
+    }
+    html += `</div>`;
+  }
+  if (!shown) html += `<div class="empty"><p>Nothing matches. ${ui.libFit ? 'Try turning off “Only show what fits my home”.' : ''}</p></div>`;
+  html += `<p class="prose small" style="margin:18px 4px 0">Tap a suggestion to read why and how. Schedules are starting points — change any of them after adding.</p>`;
+  return html;
+}
+
+/* ---------- SETTINGS ---------- */
+function viewSettings() {
+  setTop('Settings');
+  const s = state.settings, feats = s.features;
+  const fitsNew = LIBRARY.filter(l => libFits(l, feats) && !addedLibIds().has(l.id)).length;
+  const seg = (act, cur, opts) => `<div class="seg">${opts.map(([v, l]) => `<button data-act="${act}" data-v="${v}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join('')}</div>`;
+  $('#main').innerHTML = `
+  <div class="section-h"><h2>Your home</h2></div>
+  <div class="box">
+    <p class="prose" style="margin:0 0 4px">Pick what your home has — suggestions are tailored to it.</p>
+    ${FEATURES.map(g => `<div class="feat-group-h">${g.group}</div><div class="feat-grid">${g.items.map(([k, l, ic]) =>
+      `<button class="feat" data-act="feat" data-k="${k}" aria-pressed="${feats.includes(k)}">${ic} ${esc(l)}</button>`).join('')}</div>`).join('')}
+    <div style="margin-top:16px"><button class="btn btn-soft btn-block" data-act="suggest-fit" ${fitsNew ? '' : 'disabled style="opacity:.55"'}>${fitsNew ? `Review ${fitsNew} suggestions for my home` : 'All suggestions for your home are added'}</button></div>
+  </div>
+
+  <div class="section-h"><h2>Preferences</h2></div>
+  <div class="set-group">
+    <div class="set-row"><div class="lab">Appearance</div></div>
+    <div style="padding:0 14px 14px">${seg('theme', s.theme, [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']])}</div>
+    <div class="set-row"><div class="lab">“Due soon” window<small>How far ahead the Home screen looks</small></div></div>
+    <div style="padding:0 14px 14px">${seg('soon', s.soonDays, [[3, '3 days'], [7, '1 week'], [14, '2 weeks'], [30, '1 month']])}</div>
+    <div class="set-row"><div class="lab">Hemisphere<small>Flips seasonal months (e.g. gutters in Apr/Nov ↔ Oct/May)</small></div></div>
+    <div style="padding:0 14px 14px">${seg('hemi', s.hemisphere, [['N', 'Northern'], ['S', 'Southern']])}</div>
+  </div>
+
+  <div class="section-h"><h2>Reminders</h2></div>
+  <div class="set-group">
+    <button class="set-row" data-act="export-ics"><span class="lab">Add all tasks to my calendar<small>Downloads a calendar file with repeating events and a 9 AM reminder, so your phone can notify you.</small></span><span class="chev">›</span></button>
+  </div>
+
+  <div class="section-h"><h2>Your data</h2></div>
+  <div class="set-group">
+    <button class="set-row" data-act="backup"><span class="lab">Back up to a file<small>${s.lastBackup ? `Last backup: ${fmtDate(s.lastBackup, true)}` : 'Never backed up'} · Data is stored only on this device.</small></span><span class="chev">›</span></button>
+    <button class="set-row" data-act="restore"><span class="lab">Restore from a backup file</span><span class="chev">›</span></button>
+    <button class="set-row" data-act="onboard"><span class="lab">Run setup again</span><span class="chev">›</span></button>
+    <button class="set-row" data-act="reset" style="color:var(--danger)"><span class="lab">Erase everything</span></button>
+  </div>
+
+  <div class="section-h"><h2>Put it on your home screen</h2></div>
+  <div class="box prose">
+    <b>iPhone / iPad (Safari):</b> tap the Share button, then <i>Add to Home Screen</i>.<br>
+    <b>Android (Chrome):</b> tap ⋮, then <i>Add to Home screen</i> or <i>Install app</i>.<br><br>
+    It then opens like a regular app and works offline. On iPhone, adding it to the home screen also keeps Safari from clearing your data after weeks of not opening it.
+  </div>
+
+  <div class="section-h"><h2>About</h2></div>
+  <div class="box prose">
+    <b>The Home App</b> includes ${LIBRARY.length} suggested tasks taken from common homeowner checklists (Ramsey Solutions, Opendoor, HouseLogic, Fannie Mae, University of Georgia Extension, Bob Vila and LawnStarter lawn calendars) and safety guidance from NFPA, CPSC and EPA. Intervals are typical guidance, not hard rules, so check your manufacturer's instructions and local climate.
+  </div>`;
+}
+
+/* =====================================================================
+   SHEETS (bottom drawers)
+   ===================================================================== */
+const sheetStack = [];
+let histArmed = false;
+function openSheet({ title = '', body = '', foot = '', full = false, render = null, onMount = null, cls = '' }) {
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `<div class="backdrop"></div>
+    <div class="sheet ${full ? 'full' : ''} ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+      <div class="sheet-head"><h2>${esc(title)}</h2><button class="x" data-act="close" aria-label="Close">${ICONS.x}</button></div>
+      <div class="sheet-body"></div>
+      ${foot ? `<div class="sheet-foot"></div>` : ''}
+    </div>`;
+  $('#sheets').appendChild(wrap);
+  const sheet = $('.sheet', wrap), bodyEl = $('.sheet-body', wrap);
+  const entry = { wrap, sheet, body: bodyEl, render: null };
+  if (render) { entry.render = () => { bodyEl.innerHTML = render(); }; entry.render(); }
+  else bodyEl.innerHTML = body;
+  if (foot) $('.sheet-foot', wrap).innerHTML = foot;
+  $('.backdrop', wrap).addEventListener('click', () => closeSheet());
+  sheetStack.push(entry);
+  if (!histArmed) { try { history.pushState({ sheet: 1 }, ''); histArmed = true; } catch {} }
+  document.body.style.overflow = 'hidden'; document.body.classList.add('sheet-open');
+  requestAnimationFrame(() => requestAnimationFrame(() => { $('.backdrop', wrap).classList.add('open'); sheet.classList.add('open'); }));
+  if (onMount) onMount(sheet, entry);
+  return entry;
+}
+function closeSheet(entry) {
+  entry = entry || last(sheetStack);
+  if (!entry) return;
+  const i = sheetStack.indexOf(entry);
+  if (i >= 0) sheetStack.splice(i, 1);
+  entry.sheet.classList.remove('open');
+  $('.backdrop', entry.wrap).classList.remove('open');
+  setTimeout(() => entry.wrap.remove(), 300);
+  if (!sheetStack.length) { document.body.style.overflow = ''; document.body.classList.remove('sheet-open'); }
+}
+const closeAllSheets = () => { while (sheetStack.length) closeSheet(); };
+window.addEventListener('popstate', () => {
+  histArmed = false;
+  if (sheetStack.length) {
+    closeSheet();
+    if (sheetStack.length) { try { history.pushState({ sheet: 1 }, ''); histArmed = true; } catch {} }
+  }
+});
+
+function actionSheet(title, actions) {
+  const e = openSheet({
+    title,
+    body: `<div class="action-list">${actions.map((a, i) => `<button data-idx="${i}" class="${a.danger ? 'danger' : ''}">${a.icon ? ICONS[a.icon] : ''}<span>${esc(a.label)}</span></button>`).join('')}</div>`,
+    onMount: sheet => $$('.action-list button', sheet).forEach(b => b.addEventListener('click', () => {
+      const a = actions[+b.dataset.idx]; closeSheet(e); setTimeout(() => a.run(), 10);
+    })),
+  });
+}
+function confirmSheet(title, message, okLabel = 'OK', danger = false, cancelLabel = 'Cancel') {
+  return new Promise(resolve => {
+    let done = false;
+    const e = openSheet({
+      title, body: `<p class="prose" style="font-size:15px;margin:4px 2px 18px">${message}</p>
+        <div class="stack"><button class="btn btn-block ${danger ? 'btn-danger' : 'btn-primary'}" data-ok>${esc(okLabel)}</button><button class="btn btn-block" data-cancel>${esc(cancelLabel)}</button></div>`,
+      onMount: sheet => {
+        $('[data-ok]', sheet).onclick = () => { done = true; closeSheet(e); resolve(true); };
+        $('[data-cancel]', sheet).onclick = () => { done = true; closeSheet(e); resolve(false); };
+      },
+    });
+    const obs = new MutationObserver(() => { if (!e.wrap.isConnected) { obs.disconnect(); if (!done) resolve(false); } });
+    obs.observe($('#sheets'), { childList: true });
+  });
+}
+
+/* ---------- task detail ---------- */
+function openDetail(taskId, focusItem) {
+  const e = openSheet({
+    title: '', full: false,
+    render: () => {
+      const t = findTask(taskId);
+      if (!t) { setTimeout(() => closeSheet(e), 0); return ''; }
+      return detailHTML(t);
+    },
+  });
+  if (focusItem) setTimeout(() => { const el = $(`[data-item-card="${focusItem}"]`, e.sheet); if (el && findTask(taskId).items.length > 2) el.scrollIntoView({ block: 'center' }); }, 350);
+}
+function detailHTML(t) {
+  const multi = t.items.length > 1;
+  const items = t.items; // keep the order they were added so cards don't jump around after an action
+  return `
+  <div class="d-head">
+    <div class="ico" style="--c:${colorOf(t)}">${esc(iconOf(t))}</div>
+    <div style="flex:1;min-width:0"><h3>${esc(t.name)}</h3>
+      <div class="d-tags"><span class="pill">${esc(CATS[t.cat].name)}</span><span class="pill">${esc(describeSched(t.sched))}</span>${t.high ? '<span class="pill" style="color:var(--warn)">★ Important</span>' : ''}</div></div>
+  </div>
+  ${t.notes ? `<div class="notes">${esc(t.notes)}</div>` : ''}
+  <div class="section-h"><h2>${multi ? `Tracking ${t.items.length} separately` : 'Status'}</h2></div>
+  ${items.map(it => itemCardHTML(t, it, multi)).join('')}
+  <button class="btn btn-soft btn-block" data-act="add-item" data-t="${t.id}">${ICONS.plus} Add another one</button>
+  <p class="prose small" style="margin:8px 4px 0">${multi ? 'Each one keeps its own due date and history, so they can run on offset cycles.' : 'Have more than one? Two furnaces, each toilet, upstairs vs. downstairs alarms… Track each separately, each with its own due date (handy for staggered or offset cycles).'}</p>
+  <div class="section-h"><h2>Task</h2></div>
+  <div class="action-list">
+    <button data-act="edit-task" data-t="${t.id}">${ICONS.edit}<span>Edit name, schedule & notes</span></button>
+    <button data-act="ics-task" data-t="${t.id}">${ICONS.cal}<span>Add to my calendar</span></button>
+    <button class="danger" data-act="delete-task" data-t="${t.id}">${ICONS.trash}<span>Delete task</span></button>
+  </div>`;
+}
+function itemCardHTML(t, it, multi) {
+  const st = status(it.due), s = schedOf(t, it), custom = !!it.sched;
+  const recent = [...it.hist].reverse().slice(0, 3);
+  return `<div class="item-card" data-item-card="${it.id}">
+    <div class="item-top">
+      <div class="t">
+        ${itemName(t, it) ? `<div class="name">${esc(itemName(t, it))}</div>` : ''}
+        <div class="meta"><span class="due ${st}">${esc(dueText(t, it))}</span> · ${s.type === 'months' ? 'by ' : ''}${fmtDate(it.due, true)}</div>
+        <div class="meta2">Last done: ${it.last ? fmtDate(it.last, true) : 'not yet recorded'}${custom ? ` · <b>${esc(describeSched(s))}</b>` : ''}</div>
+        ${it.notes ? `<div class="item-note">📝 ${esc(it.notes)}</div>` : ''}
+      </div>
+    </div>
+    <div class="item-actions">
+      <button class="btn btn-primary" data-act="done-today" data-t="${t.id}" data-i="${it.id}">${ICONS.check} Done today</button>
+      <button class="btn" data-act="done-on" data-t="${t.id}" data-i="${it.id}">Other day…</button>
+      <button class="btn icon-only" data-act="item-more" data-t="${t.id}" data-i="${it.id}" aria-label="More options">${ICONS.dots}</button>
+    </div>
+    ${recent.length ? `<ul class="hist">${recent.map(h => `<li><span>${fmtDate(h.d, true)}</span><span>${esc(h.n || 'Done')}</span></li>`).join('')}</ul>
+      ${it.hist.length > 3 ? `<button class="link-btn" data-act="history" data-t="${t.id}" data-i="${it.id}">See all ${it.hist.length}</button>` : ''}` : ''}
+  </div>`;
+}
+
+/* ---------- schedule editor (shared by task & item editors) ---------- */
+function schedEditorHTML(s) {
+  const isM = s.type === 'months';
+  const season = s.type === 'interval' ? (s.season || []) : [];
+  const months = isM ? s.months : [];
+  const hasSeason = season.length > 0 && season.length < 12;
+  return `
+  <div class="field"><span>How often?</span>
+    <div class="seg" data-sched-type>
+      <button type="button" data-type="interval" aria-pressed="${!isM}">Repeat every…</button>
+      <button type="button" data-type="months" aria-pressed="${isM}">Certain months</button>
+    </div>
+  </div>
+  <div data-pane="interval" class="${isM ? 'hidden' : ''}">
+    <div class="field"><div class="inline">
+      <input class="input every-n" type="number" inputmode="numeric" min="1" max="999" value="${isM ? 1 : (s.every || 1)}" data-every aria-label="Every how many">
+      <select class="input" data-unit aria-label="Unit">${Object.entries(UNITS).map(([k, [, many]]) => `<option value="${k}" ${!isM && s.unit === k ? 'selected' : ''}>${many}</option>`).join('')}</select>
+    </div>
+    <div class="quick">${[[1,'w','Weekly'],[1,'m','Monthly'],[3,'m','Quarterly'],[6,'m','Twice a year'],[1,'y','Yearly']].map(([n,u,l]) => `<button type="button" data-preset="${n}${u}">${l}</button>`).join('')}</div></div>
+    <button type="button" class="toggle" data-season-toggle role="switch" aria-checked="${hasSeason}"><span class="lab">Only during certain months<small>e.g. mowing April–October</small></span><span class="sw"></span></button>
+    <div data-season-pane class="${hasSeason ? '' : 'hidden'} field"><div class="months" data-months="season">${MONTHS.map((m, i) => `<button type="button" data-m="${i + 1}" aria-pressed="${season.includes(i + 1)}">${m}</button>`).join('')}</div></div>
+  </div>
+  <div data-pane="months" class="${isM ? '' : 'hidden'} field">
+    <div class="months" data-months="due">${MONTHS.map((m, i) => `<button type="button" data-m="${i + 1}" aria-pressed="${months.includes(i + 1)}">${m}</button>`).join('')}</div>
+    <div class="hint">Due once in each selected month, any day that month. Pick two for spring & fall jobs.</div>
+  </div>
+  <div class="preview" data-sched-preview></div>`;
+}
+function bindSchedEditor(root, onChange) {
+  const q = s => $(s, root);
+  const read = () => {
+    const type = $('[data-sched-type] [aria-pressed="true"]', root).dataset.type;
+    if (type === 'months') {
+      const ms = $$('[data-months="due"] [aria-pressed="true"]', root).map(b => +b.dataset.m);
+      return { type: 'months', months: ms };
+    }
+    const seasonOn = q('[data-season-toggle]').getAttribute('aria-checked') === 'true';
+    const season = seasonOn ? $$('[data-months="season"] [aria-pressed="true"]', root).map(b => +b.dataset.m) : [];
+    return { type: 'interval', every: Math.max(1, Math.min(999, parseInt(q('[data-every]').value, 10) || 1)), unit: q('[data-unit]').value, season: season.length === 12 ? [] : season };
+  };
+  const update = () => {
+    const s = read(), p = q('[data-sched-preview]');
+    if (s.type === 'months' && !s.months.length) p.innerHTML = 'Pick at least one month.';
+    else if (s.type === 'interval' && q('[data-season-toggle]').getAttribute('aria-checked') === 'true' && !s.season.length) p.innerHTML = 'Pick the months it should happen in.';
+    else p.innerHTML = `<b>${esc(describeSched(s))}</b><br>If done today, next due ${s.type === 'months' ? 'by ' : ''}<b>${fmtDate(nextDue(s, today()), true)}</b>.`;
+    onChange && onChange(s);
+  };
+  $$('[data-sched-type] button', root).forEach(b => b.addEventListener('click', () => {
+    $$('[data-sched-type] button', root).forEach(x => x.setAttribute('aria-pressed', x === b));
+    q('[data-pane="interval"]').classList.toggle('hidden', b.dataset.type !== 'interval');
+    q('[data-pane="months"]').classList.toggle('hidden', b.dataset.type !== 'months');
+    update();
+  }));
+  $$('.months button', root).forEach(b => b.addEventListener('click', () => { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); update(); }));
+  q('[data-season-toggle]').addEventListener('click', e => {
+    const el = e.currentTarget, on = el.getAttribute('aria-checked') !== 'true';
+    el.setAttribute('aria-checked', on);
+    q('[data-season-pane]').classList.toggle('hidden', !on);
+    if (on && !$$('[data-months="season"] [aria-pressed="true"]', root).length) WARM.forEach(m => $(`[data-months="season"] [data-m="${m}"]`, root).setAttribute('aria-pressed', 'true'));
+    update();
+  });
+  $$('[data-preset]', root).forEach(b => b.addEventListener('click', () => {
+    const v = b.dataset.preset; q('[data-every]').value = parseInt(v, 10); q('[data-unit]').value = v.slice(-1); update();
+  }));
+  q('[data-every]').addEventListener('input', update);
+  q('[data-unit]').addEventListener('change', update);
+  update();
+  return { read, valid: () => { const s = read(); return s.type === 'months' ? s.months.length > 0 : !(q('[data-season-toggle]').getAttribute('aria-checked') === 'true' && !s.season.length); } };
+}
+
+/* ---------- task editor ---------- */
+function openTaskEditor(taskId) {
+  const t = taskId ? findTask(taskId) : null;
+  const isNew = !t;
+  const base = t ? clone(t) : { name: '', cat: ui.tasksCat !== 'all' ? ui.tasksCat : 'other', notes: '', icon: '', sched: E(3, 'm'), high: false };
+  let sched = base.sched, ed;
+  const e = openSheet({
+    title: isNew ? 'New task' : 'Edit task', full: true,
+    body: `
+      <label class="field"><span>Task name</span><input class="input" data-name value="${esc(base.name)}" placeholder="e.g. Clean the basement window wells" maxlength="120" autocomplete="off"></label>
+      <div class="inline field" style="align-items:flex-end">
+        <label style="flex:1"><span style="display:block;font-size:13px;font-weight:700;color:var(--text-2);margin:0 2px 6px">Category</span>
+          <select class="input" data-cat>${Object.entries(CATS).map(([k, c]) => `<option value="${k}" ${base.cat === k ? 'selected' : ''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></label>
+        <label style="flex:0 0 84px"><span style="display:block;font-size:13px;font-weight:700;color:var(--text-2);margin:0 2px 6px">Icon</span>
+          <input class="input" data-icon value="${esc(base.icon || '')}" placeholder="${esc(CATS[base.cat].icon)}" maxlength="4" style="text-align:center;font-size:20px" aria-label="Emoji icon (optional)"></label>
+      </div>
+      <div class="box" data-sched>${schedEditorHTML(sched)}</div>
+      ${isNew ? `<div class="box">
+        <label class="field"><span>Last done (optional)</span><input class="input" type="date" data-last max="${today()}"><div class="hint">If you know when you last did it, we'll work out the next due date.</div></label>
+        <label class="field" style="margin-bottom:0"><span>Or first due on</span><input class="input" type="date" data-first><div class="hint">Leave both blank to start now.</div></label>
+      </div>` : ''}
+      <label class="field"><span>Notes / how-to</span><textarea class="input" data-notes placeholder="Steps, part numbers, who to call…">${esc(base.notes)}</textarea></label>
+      <button type="button" class="toggle" data-high role="switch" aria-checked="${!!base.high}"><span class="lab">★ Mark as important<small>Safety-critical or expensive if missed</small></span><span class="sw"></span></button>`,
+    foot: `<button class="btn" data-act="close">Cancel</button><button class="btn btn-primary" data-save>${isNew ? 'Add task' : 'Save'}</button>`,
+    onMount: sheet => {
+      ed = bindSchedEditor($('[data-sched]', sheet), s => { sched = s; });
+      $('[data-cat]', sheet).addEventListener('change', ev => { $('[data-icon]', sheet).placeholder = CATS[ev.target.value].icon; });
+      $('[data-high]', sheet).addEventListener('click', ev => ev.currentTarget.setAttribute('aria-checked', ev.currentTarget.getAttribute('aria-checked') !== 'true'));
+      if (isNew) setTimeout(() => $('[data-name]', sheet).focus(), 350);
+      $('[data-save]', sheet).addEventListener('click', () => {
+        const name = $('[data-name]', sheet).value.trim();
+        if (!name) { $('[data-name]', sheet).focus(); toast('Give the task a name'); return; }
+        if (!ed.valid()) { toast('Finish choosing the schedule'); return; }
+        sched = ed.read();
+        const data = {
+          name, cat: $('[data-cat]', sheet).value, icon: $('[data-icon]', sheet).value.trim(),
+          notes: $('[data-notes]', sheet).value.trim(), high: $('[data-high]', sheet).getAttribute('aria-checked') === 'true',
+        };
+        if (isNew) {
+          const nt = { id: uid(), ...data, sched, items: [], created: today() };
+          const lastV = $('[data-last]', sheet).value, firstV = $('[data-first]', sheet).value;
+          const it = newItem(nt, '', firstV || today());
+          if (lastV) { it.hist.push({ d: lastV, n: '' }); it.last = lastV; it.due = nextDue(sched, lastV); }
+          else if (firstV) it.due = firstV;
+          else if (sched.type === 'months') it.due = firstDue(sched, it.id);
+          else it.due = rollIntoSeason(today(), sched.season);
+          nt.items.push(it);
+          state.tasks.push(nt);
+          closeSheet(e); commit();
+          toast(`Added “${name}”`);
+          openDetail(nt.id);
+        } else {
+          snapshot(t);
+          const changed = !sameSched(t.sched, sched);
+          Object.assign(t, data, { sched });
+          if (changed) t.items.forEach(it => { if (!it.sched) recalcItem(t, it); });
+          closeSheet(e); commit();
+          toast('Saved', 'Undo', undo);
+        }
+      });
+    },
+  });
+}
+
+/* ---------- item (iteration) editor ---------- */
+function openItemEditor(taskId, itemId) {
+  const t = findTask(taskId), it = itemId ? findItem(t, itemId) : null, isNew = !it;
+  const first = [...t.items].sort((a, b) => a.due.localeCompare(b.due))[0];
+  const half = Math.round(intervalDays(t.sched) / 2);
+  const suggestedDue = isNew ? first.due : it.due;
+  const halfLabel = half < 60 ? plural(half, 'day') : half < 365 ? `${Math.round(half / 30.44)} mo` : plural(Math.round(half / 365.25 * 2) / 2, 'yr', 'yrs');
+  let ed = null;
+  const e = openSheet({
+    title: isNew ? `Add another: ${t.name}` : 'Edit item', full: true,
+    body: `
+      <label class="field"><span>Name</span><input class="input" data-label value="${esc(it ? it.label : '')}" placeholder="e.g. Upstairs, Basement furnace, Guest bath toilet" maxlength="80" autocomplete="off">
+</label>
+      ${isNew && t.items.length === 1 && !t.items[0].label ? `<label class="field"><span>Name for the one you already have</span><input class="input" data-label0 placeholder="e.g. Downstairs, Main furnace, Hall bath toilet" maxlength="80" autocomplete="off"><div class="hint">So you can tell them apart. You can leave it blank.</div></label>` : ''}
+      <label class="field"><span>Next due</span><input class="input" type="date" data-due value="${suggestedDue}">
+        <div class="quick">
+          <button type="button" data-q="today">Due today</button>
+          ${t.items.length ? `<button type="button" data-q="same">Same as ${first.label ? `“${esc(first.label)}”` : 'the first one'}</button>` : ''}
+          ${t.sched.type === 'interval' ? `<button type="button" data-q="half">Offset: half a cycle later (+${halfLabel})</button>` : ''}
+        </div>
+        ${isNew && t.sched.type === 'interval' ? `<div class="hint">Staggering spreads the work out — e.g. test half your detectors one month, the rest the next.</div>` : ''}</label>
+      <label class="field"><span>Last done</span><input class="input" type="date" data-last value="${it && it.last ? it.last : ''}" max="${today()}">
+        <div class="hint">Changing this recalculates the next due date.</div></label>
+      <label class="field"><span>Note</span><input class="input" data-notes value="${esc(it ? it.notes : '')}" placeholder="e.g. Filter size 16×25×1, installed 2021" maxlength="200"></label>
+      <button type="button" class="toggle" data-own role="switch" aria-checked="${!!(it && it.sched)}"><span class="lab">Give this one its own schedule<small>e.g. a 4-inch filter on a 6-month cycle while the other is monthly</small></span><span class="sw"></span></button>
+      <div class="box ${it && it.sched ? '' : 'hidden'}" data-own-pane>${schedEditorHTML((it && it.sched) || t.sched)}</div>
+      ${!isNew && t.items.length > 1 ? `<button class="btn btn-danger btn-block" data-del>${ICONS.trash} Remove this one</button>` : ''}`,
+    foot: `<button class="btn" data-act="close">Cancel</button><button class="btn btn-primary" data-save>${isNew ? 'Add' : 'Save'}</button>`,
+    onMount: sheet => {
+      const ownPane = $('[data-own-pane]', sheet), ownT = $('[data-own]', sheet);
+      ed = bindSchedEditor(ownPane);
+      ownT.addEventListener('click', () => { const on = ownT.getAttribute('aria-checked') !== 'true'; ownT.setAttribute('aria-checked', on); ownPane.classList.toggle('hidden', !on); });
+      const dueEl = $('[data-due]', sheet), lastEl = $('[data-last]', sheet);
+      let dueTouched = false;
+      dueEl.addEventListener('change', () => { dueTouched = true; });
+      $$('[data-q]', sheet).forEach(b => b.addEventListener('click', () => {
+        dueTouched = true;
+        dueEl.value = b.dataset.q === 'today' ? today() : b.dataset.q === 'same' ? first.due : addDays(first.due, half);
+      }));
+      lastEl.addEventListener('change', () => {
+        if (!lastEl.value) return;
+        const s = ownT.getAttribute('aria-checked') === 'true' ? ed.read() : t.sched;
+        dueEl.value = nextDue(s, lastEl.value); dueTouched = true;
+      });
+      if (isNew) setTimeout(() => $('[data-label]', sheet).focus(), 350);
+      const del = $('[data-del]', sheet);
+      if (del) del.addEventListener('click', async () => {
+        if (!(await confirmSheet('Remove this item?', `“${esc(itemName(t, it))}” and its history will be removed from “${esc(t.name)}”.`, 'Remove', true))) return;
+        snapshot(t); t.items = t.items.filter(x => x.id !== it.id); closeSheet(e); commit(); toast('Removed', 'Undo', undo);
+      });
+      $('[data-save]', sheet).addEventListener('click', () => {
+        const own = ownT.getAttribute('aria-checked') === 'true';
+        if (own && !ed.valid()) { toast('Finish choosing the schedule'); return; }
+        snapshot(t);
+        const target = it || { id: uid(), hist: [], last: null };
+        target.label = $('[data-label]', sheet).value.trim();
+        const l0 = $('[data-label0]', sheet);
+        if (l0 && l0.value.trim()) t.items[0].label = l0.value.trim();
+        target.notes = $('[data-notes]', sheet).value.trim();
+        const before = schedOf(t, target);
+        const s = own ? ed.read() : null;
+        if (s && !sameSched(s, t.sched)) target.sched = s; else delete target.sched;
+        const schedChanged = !isNew && !sameSched(before, schedOf(t, target));
+        const lastV = lastEl.value || null;
+        if (lastV && lastV !== target.last) {
+          if (!target.hist.some(h => h.d === lastV)) target.hist.push({ d: lastV, n: '' });
+          target.hist.sort((a, b) => a.d.localeCompare(b.d));
+          target.last = last(target.hist).d;
+        } else if (!lastV && isNew) target.last = null;
+        target.due = dueEl.value || (target.last ? nextDue(schedOf(t, target), target.last) : today());
+        if (schedChanged && !dueTouched) recalcItem(t, target);
+        if (isNew) t.items.push(target);
+        closeSheet(e); commit();
+        toast(isNew ? `Added. Now tracking ${t.items.length}` : 'Saved', 'Undo', undo);
+      });
+    },
+  });
+}
+
+/* ---------- small dialogs ---------- */
+function openDoneOn(t, it) {
+  const e = openSheet({
+    title: 'Mark as done',
+    body: `<p class="prose" style="margin:0 2px 14px">${esc(t.name)}${itemName(t, it) ? ` · ${esc(itemName(t, it))}` : ''}</p>
+      <label class="field"><span>Date done</span><input class="input" type="date" data-d value="${today()}" max="${today()}"></label>
+      <label class="field"><span>Note (optional)</span><input class="input" data-n placeholder="e.g. Replaced flapper, used MERV 8 filter" maxlength="200"></label>
+      <button class="btn btn-primary btn-block" data-ok>${ICONS.check} Save</button>`,
+    onMount: sheet => $('[data-ok]', sheet).addEventListener('click', () => {
+      const d = $('[data-d]', sheet).value || today();
+      closeSheet(e); markDone(t, it, d > today() ? today() : d, $('[data-n]', sheet).value.trim());
+    }),
+  });
+}
+function openSnooze(t, it) {
+  actionSheet('Snooze until…', [
+    { label: 'Tomorrow', icon: 'clock', run: () => snoozeItem(t, it, 1) },
+    { label: 'In 3 days', icon: 'clock', run: () => snoozeItem(t, it, 3) },
+    { label: 'In 1 week', icon: 'clock', run: () => snoozeItem(t, it, 7) },
+    { label: 'In 2 weeks', icon: 'clock', run: () => snoozeItem(t, it, 14) },
+    { label: 'In 1 month', icon: 'clock', run: () => snoozeItem(t, it, 0, addMonths(today(), 1)) },
+    { label: 'Pick a date…', icon: 'cal', run: () => openPickDate(t, it) },
+  ]);
+}
+function openPickDate(t, it) {
+  const e = openSheet({
+    title: 'Set next due date',
+    body: `<label class="field"><span>Next due</span><input class="input" type="date" data-d value="${it.due}"></label>
+      <button class="btn btn-primary btn-block" data-ok>Save</button>`,
+    onMount: sheet => $('[data-ok]', sheet).addEventListener('click', () => {
+      const d = $('[data-d]', sheet).value; if (!d) return;
+      closeSheet(e); snoozeItem(t, it, 0, d);
+    }),
+  });
+}
+function openHistory(t, it) {
+  const e = openSheet({
+    title: 'History',
+    render: () => {
+      const tt = findTask(t.id), ii = tt && findItem(tt, it.id);
+      if (!ii) return '';
+      if (!ii.hist.length) return '<div class="empty">No history yet.</div>';
+      return `<p class="prose" style="margin:0 2px 10px">${esc(tt.name)}${itemName(tt, ii) ? ` · ${esc(itemName(tt, ii))}` : ''}</p>
+        <div class="list">${[...ii.hist].map((h, idx) => ({ h, idx })).reverse().map(({ h, idx }) => `
+          <div class="row compact"><div class="row-main"><div class="row-title">${fmtLong(h.d)}, ${yearOf(h.d)}</div>${h.n ? `<div class="row-meta">${esc(h.n)}</div>` : ''}</div>
+          <button class="icon-btn" style="box-shadow:none;background:var(--surface-2);color:var(--danger)" data-act="hist-del" data-t="${tt.id}" data-i="${ii.id}" data-idx="${idx}" aria-label="Delete entry">${ICONS.trash}</button></div>`).join('')}</div>`;
+    },
+  });
+}
+function itemMenu(t, it) {
+  const acts = [
+    { label: 'Done on another day…', icon: 'check', run: () => openDoneOn(t, it) },
+    { label: 'Snooze', icon: 'clock', run: () => openSnooze(t, it) },
+    { label: 'Skip this time', icon: 'skip', run: () => skipItem(t, it) },
+    { label: 'Set next due date…', icon: 'cal', run: () => openPickDate(t, it) },
+    { label: t.items.length > 1 || it.label ? 'Edit name, dates & schedule' : 'Edit dates, note & schedule', icon: 'edit', run: () => openItemEditor(t.id, it.id) },
+  ];
+  if (it.hist.length) acts.push({ label: `History (${it.hist.length})`, icon: 'hist', run: () => openHistory(t, it) });
+  if (t.items.length > 1) acts.push({ label: 'Remove this one', icon: 'trash', danger: true, run: async () => {
+    if (!(await confirmSheet('Remove this item?', `“${esc(itemName(t, it))}” and its history will be removed.`, 'Remove', true))) return;
+    snapshot(t); t.items = t.items.filter(x => x.id !== it.id); commit(); toast('Removed', 'Undo', undo);
+  } });
+  actionSheet(itemName(t, it) ? `${t.name} · ${itemName(t, it)}` : t.name, acts);
+}
+
+/* ---------- onboarding ---------- */
+function openOnboarding() {
+  const feats = new Set(state.settings.features);
+  const count = () => LIBRARY.filter(l => libFits(l, [...feats])).length;
+  const e = openSheet({
+    title: '', full: true,
+    body: `
+      <div class="onb-hero"><div class="logo">${ICONS.house}</div>
+        <h2>The Home App</h2>
+        <p>Keep track of the recurring stuff that keeps a house healthy: smoke alarms, furnace filters, leaky toilet flappers, gutters, the attic, the yard.</p></div>
+      <div class="section-h"><h2>What does your home have?</h2></div>
+      <div class="box">${FEATURES.map(g => `<div class="feat-group-h">${g.group}</div><div class="feat-grid">${g.items.map(([k, l, ic]) =>
+        `<button class="feat" data-k="${k}" aria-pressed="${feats.has(k)}">${ic} ${esc(l)}</button>`).join('')}</div>`).join('')}</div>
+      <p class="prose small" style="margin:0 4px">Everything is stored privately on this device. You can change any schedule, add your own tasks, and track multiples (two furnaces, three toilets…) separately.</p>`,
+    foot: `<button class="btn" data-empty style="flex:0 0 auto">Start empty</button><button class="btn btn-primary" data-go></button>`,
+    onMount: sheet => {
+      const go = $('[data-go]', sheet);
+      const upd = () => {
+        const added = addedLibIds();
+        const n = LIBRARY.filter(l => libFits(l, [...feats]) && !added.has(l.id)).length;
+        go.textContent = state.tasks.length ? (n ? `Add ${n} new tasks` : 'Done') : `Build my list (${count()} tasks)`;
+      };
+      $$('.feat', sheet).forEach(b => b.addEventListener('click', () => {
+        const k = b.dataset.k; feats.has(k) ? feats.delete(k) : feats.add(k); b.setAttribute('aria-pressed', feats.has(k)); upd();
+      }));
+      upd();
+      $('[data-empty]', sheet).addEventListener('click', () => { state.settings.onboarded = true; state.settings.features = [...feats]; closeSheet(e); commit(); ui.tab = 'tasks'; ui.tasksSeg = 'ideas'; renderAll(); });
+      go.addEventListener('click', () => {
+        state.settings.features = [...feats]; state.settings.onboarded = true;
+        const added = addedLibIds(); let n = 0;
+        for (const l of LIBRARY) if (libFits(l, [...feats]) && !added.has(l.id)) { state.tasks.push(taskFromLib(l)); n++; }
+        closeSheet(e); ui.tab = 'due'; commit();
+        if (n) toast(`Added ${n} tasks, spread out so they're not all due at once`);
+      });
+    },
+  });
+}
+function openSuggestFit() {
+  ui.tab = 'tasks'; ui.tasksSeg = 'ideas'; ui.libFit = true; ui.libQuery = ''; renderAll(); window.scrollTo(0, 0);
+}
+
+/* =====================================================================
+   EXPORT / IMPORT
+   ===================================================================== */
+function download(filename, text, mime) {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
+}
+async function shareOrDownload(filename, text, mime) {
+  try {
+    const file = new File([text], filename, { type: mime });
+    if (navigator.canShare && matchMedia('(pointer: coarse)').matches && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: filename });
+      return true;
+    }
+  } catch (e) { if (e && e.name === 'AbortError') return false; }
+  download(filename, text, mime);
+  return true;
+}
+async function backup() {
+  const text = JSON.stringify({ app: 'the-home-app', exported: new Date().toISOString(), ...state }, null, 1);
+  const ok = await shareOrDownload(`home-app-backup-${today()}.json`, text, 'application/json');
+  if (ok) { state.settings.lastBackup = today(); commit(); toast('Backup saved'); }
+}
+function restoreFromFile(file) {
+  const r = new FileReader();
+  r.onload = async () => {
+    try {
+      const data = JSON.parse(r.result);
+      if (!data || !Array.isArray(data.tasks)) throw new Error('bad');
+      if (!(await confirmSheet('Restore backup?', `This replaces your current list (${plural(state.tasks.length, 'task')}) with the backup (${plural(data.tasks.length, 'task')}).`, 'Restore', true))) return;
+      delete data.app; delete data.exported;
+      state = migrate(data); state.settings.onboarded = true; commit(); toast('Backup restored');
+    } catch { toast('That file is not a Home App backup'); }
+  };
+  r.readAsText(file);
+}
+function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+function icsFold(line) {
+  const cps = Array.from(line); if (cps.length <= 70) return line;
+  const out = []; for (let i = 0; i < cps.length; i += 70) out.push((i ? ' ' : '') + cps.slice(i, i + 70).join(''));
+  return out.join('\r\n');
+}
+function buildICS(tasks) {
+  const now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//The Home App//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Home Maintenance'];
+  for (const t of tasks) for (const it of t.items) {
+    const s = schedOf(t, it);
+    let start = it.due < today() ? today() : it.due, rule;
+    if (s.type === 'months') {
+      start = it.due.slice(0, 8) + '01';
+      if (start < today().slice(0, 8) + '01') start = today().slice(0, 8) + '01';
+      rule = `FREQ=YEARLY;BYMONTH=${[...s.months].sort((a, b) => a - b).join(',')};BYMONTHDAY=1`;
+    } else {
+      rule = `FREQ=${{ d: 'DAILY', w: 'WEEKLY', m: 'MONTHLY', y: 'YEARLY' }[s.unit]};INTERVAL=${s.every}`;
+      if (s.season && s.season.length && s.season.length < 12 && s.unit !== 'y') rule += `;BYMONTH=${[...s.season].sort((a, b) => a - b).join(',')}`;
+    }
+    const d = start.replace(/-/g, ''), dEnd = addDays(start, 1).replace(/-/g, '');
+    const title = `${iconOf(t)} ${t.name}${itemName(t, it) ? ` (${itemName(t, it)})` : ''}`;
+    const desc = `${describeSched(s)}${s.type === 'months' ? ' (any day this month)' : ''}\n\n${t.notes || ''}${it.notes ? `\n\nNote: ${it.notes}` : ''}`;
+    L.push('BEGIN:VEVENT', `UID:${t.id}-${it.id}@the-home-app`, `DTSTAMP:${now}`, `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${dEnd}`, `RRULE:${rule}`,
+      `SUMMARY:${icsEscape(title)}`, `DESCRIPTION:${icsEscape(desc)}`, 'TRANSP:TRANSPARENT',
+      'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEscape(t.name)}`, 'TRIGGER:PT9H', 'END:VALARM', 'END:VEVENT');
+  }
+  L.push('END:VCALENDAR');
+  return L.map(icsFold).join('\r\n') + '\r\n';
+}
+
+/* =====================================================================
+   TOAST
+   ===================================================================== */
+let toastTimer;
+function toast(msg, actionLabel, action) {
+  const el = $('#toast'), btn = $('#toast-btn');
+  $('#toast-msg').textContent = msg;
+  if (actionLabel) { btn.textContent = actionLabel; btn.classList.remove('hidden'); btn.onclick = () => { el.classList.remove('show'); action(); }; }
+  else { btn.classList.add('hidden'); btn.onclick = null; }
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), actionLabel ? 5500 : 2800);
+}
+
+/* =====================================================================
+   EVENTS
+   ===================================================================== */
+document.addEventListener('click', async ev => {
+  const el = ev.target.closest('[data-act]');
+  if (!el) return;
+  const a = el.dataset.act;
+  const t = el.dataset.t ? findTask(el.dataset.t) : null;
+  const it = t && el.dataset.i ? findItem(t, el.dataset.i) : null;
+  if (['lib-add', 'lib-open', 'lib-add-cat'].includes(a)) { ev.preventDefault(); ev.stopPropagation(); }
+  switch (a) {
+    case 'tab': ui.tab = el.dataset.tab; safeSet('homeapp.tab', ui.tab); closeAllSheets(); renderAll(); window.scrollTo(0, 0); break;
+    case 'close': closeSheet(); break;
+    case 'open': if (t) openDetail(t.id, el.dataset.i); break;
+    case 'done': {
+      ev.stopPropagation();
+      if (!t || !it) break;
+      el.classList.add('done');
+      const row = el.closest('.row'); if (row) row.classList.add('leaving');
+      if (navigator.vibrate) navigator.vibrate(12);
+      setTimeout(() => markDone(t, it), 600);
+      break;
+    }
+    case 'done-today': if (it) markDone(t, it); break;
+    case 'done-on': if (it) openDoneOn(t, it); break;
+    case 'item-more': if (it) itemMenu(t, it); break;
+    case 'history': if (it) openHistory(t, it); break;
+    case 'hist-del': if (it) {
+      snapshot(t); it.hist.splice(+el.dataset.idx, 1);
+      it.last = it.hist.length ? last(it.hist).d : null;
+      commit(); toast('Entry deleted', 'Undo', undo);
+    } break;
+    case 'add-item': if (t) openItemEditor(t.id); break;
+    case 'edit-task': if (t) openTaskEditor(t.id); break;
+    case 'new-task': openTaskEditor(); break;
+    case 'delete-task': if (t && await confirmSheet('Delete this task?', `“${esc(t.name)}” and all of its history will be deleted.`, 'Delete', true)) {
+      snapshot(t); state.tasks = state.tasks.filter(x => x.id !== t.id); closeSheet(); commit(); toast('Task deleted', 'Undo', undo);
+    } break;
+    case 'ics-task': if (t) download(`${t.name.replace(/[^\w]+/g, '-').toLowerCase()}.ics`, buildICS([t]), 'text/calendar'); break;
+    case 'due-cat': ui.dueCat = el.dataset.cat; renderMain(); break;
+    case 'tasks-cat': ui.tasksCat = el.dataset.cat; renderMain(); break;
+    case 'tasks-seg': ui.tab = 'tasks'; ui.tasksSeg = el.dataset.seg; renderAll(); break;
+    case 'toggle-later': ui.showLater = !ui.showLater; renderMain(); break;
+    case 'toggle-recent': ui.showRecent = !ui.showRecent; renderMain(); break;
+    case 'lib-fit': ui.libFit = !ui.libFit; renderMain(); break;
+    case 'lib-add': {
+      const lib = LIBRARY.find(l => l.id === el.dataset.lib);
+      if (lib) { const nt = taskFromLib(lib); state.tasks.push(nt); commit(); toast(`Added “${lib.name}”`, 'Open', () => openDetail(nt.id)); }
+      break;
+    }
+    case 'lib-open': { const ex = state.tasks.find(x => x.libId === el.dataset.lib); if (ex) openDetail(ex.id); break; }
+    case 'lib-add-cat': {
+      const added = addedLibIds(), feats = state.settings.features, q = ui.libQuery.trim().toLowerCase();
+      const list = LIBRARY.filter(l => l.cat === el.dataset.cat && !added.has(l.id) && (!ui.libFit || libFits(l, feats)) && (!q || (l.name + ' ' + l.notes).toLowerCase().includes(q)));
+      list.forEach(l => state.tasks.push(taskFromLib(l)));
+      commit(); toast(`Added ${plural(list.length, 'task')}`);
+      break;
+    }
+    case 'feat': {
+      const k = el.dataset.k, f = state.settings.features;
+      state.settings.features = f.includes(k) ? f.filter(x => x !== k) : [...f, k];
+      commit(); break;
+    }
+    case 'suggest-fit': openSuggestFit(); break;
+    case 'theme': state.settings.theme = el.dataset.v; commit(); break;
+    case 'soon': state.settings.soonDays = +el.dataset.v; commit(); break;
+    case 'hemi': {
+      const v = el.dataset.v; if (v === state.settings.hemisphere) break;
+      const shift = state.tasks.length && await confirmSheet('Switch hemisphere?', 'Also shift the months on the seasonal tasks you already have by six months? Suggestions you add later will match the new hemisphere either way.', 'Shift my tasks', false, 'Only new suggestions');
+      state.settings.hemisphere = v;
+      if (shift) for (const tk of state.tasks) {
+        const isSeasonal = tk.sched.type === 'months' || (tk.sched.season && tk.sched.season.length);
+        tk.sched = shiftSched(tk.sched);
+        for (const i2 of tk.items) { if (i2.sched) i2.sched = shiftSched(i2.sched); if (isSeasonal || i2.sched) recalcItem(tk, i2); }
+      }
+      commit(); break;
+    }
+    case 'export-ics': {
+      if (!state.tasks.length) { toast('Add some tasks first'); break; }
+      download('home-maintenance.ics', buildICS(state.tasks), 'text/calendar');
+      toast('Calendar file downloaded. Open it to add the events.');
+      break;
+    }
+    case 'backup': backup(); break;
+    case 'nag-later': state.settings.backupNagUntil = addDays(today(), 30); commit(); break;
+    case 'restore': $('#restore-file').click(); break;
+    case 'onboard': openOnboarding(); break;
+    case 'reset': if (await confirmSheet('Erase everything?', 'All tasks, history and settings on this device will be deleted. Consider backing up first.', 'Erase', true)) {
+      state = blankState(); commit(); openOnboarding();
+    } break;
+  }
+});
+document.addEventListener('keydown', ev => {
+  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches('[role="button"][data-act]')) { ev.preventDefault(); ev.target.click(); }
+  if (ev.key === 'Escape' && sheetStack.length) closeSheet();
+});
+$('#restore-file').addEventListener('change', ev => { const f = ev.target.files[0]; if (f) restoreFromFile(f); ev.target.value = ''; });
+
+// Refresh when the day changes or the app returns to the foreground
+let lastDay = today();
+document.addEventListener('visibilitychange', () => { if (!document.hidden && today() !== lastDay) { lastDay = today(); renderAll(); } });
+setInterval(() => { if (today() !== lastDay) { lastDay = today(); renderAll(); } }, 60000);
+
+/* ---------- boot ---------- */
+renderAll();
+if (!state.settings.onboarded) openOnboarding();
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname)) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
